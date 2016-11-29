@@ -25,6 +25,6 @@ class CreateCanjePuntosTable extends Migration
      */
     public function down()
     {
-        Schema::drop('canje_puntos');
+        Schema::dropIfExists('canje_puntos');
     }
 }
