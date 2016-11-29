@@ -21,6 +21,8 @@ use App\Libraries\libwebpay\soap_validation;
 use App\Libraries\libwebpay\soapclient;
 
 use App\Libraries\libwebpay\WebPayNormal;
+use Exception;
+use SoapValidation;
 
 /**
  * @author     Allware Ltda. (http://www.allware.cl)
@@ -33,7 +35,6 @@ use App\Libraries\libwebpay\WebPayNormal;
 require_once(__DIR__ . '/soap_wsse.php');
 require_once(__DIR__ . '/soap_validation.php');
 require_once(__DIR__ . '/soapclient.php');
-
 //include('configuration.php');
 include('webpay_normal.php');
 include('webpay_mall_normal.php');
@@ -114,3 +115,6 @@ class getTransactionResultResponse {
     var $return; //transactionResultOutput
 
 }
+
+
+

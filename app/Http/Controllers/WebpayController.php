@@ -56,13 +56,13 @@ class WebpayController extends Controller
         );
 
         /** Iniciamos Transaccion */
-        $result = $wp->getNormalTransaction()->initTransaction(9990,rand(),uniqid(),'http://dev.apitransbanck.com/getResult','http://dev.apitransbanck.com/end');//->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
+        $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
         dd($result);
 
 
 
 
-        return dd($this->wp);
+
     }
 
     /**
