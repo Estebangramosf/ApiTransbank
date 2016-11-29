@@ -8,25 +8,29 @@ use App\Http\Requests;
 use App\Libraries\libwebpay\webpay;
 use App\Libraries\libwebpay\configuration;
 
+
 class WebpayController extends Controller
 {
+    private $webpay;
+    private $webpay_config;
+    private $webpay_certificate;
+
 
     public function __construct()
     {
         #It's good looking
         //dd(webpay::class);
-        $this->wp_config = new configuration();
-        $this->wp_certificate = $this->cert_normal();
+        $wp_config = new configuration();
+        $wp_certificate = $this->cert_normal();
                 //dd($this->wp_config);
 
-        $this->wp_config->setEnvironment($this->wp_certificate['environment']);
-        $this->wp_config->setCommerceCode($this->wp_certificate['commerce_code']);
-        $this->wp_config->setPrivateKey($this->wp_certificate['private_key']);
-        $this->wp_config->setPublicCert($this->wp_certificate['public_cert']);
-        $this->wp_config->setWebpayCert($this->wp_certificate['webpay_cert']);
+        $wp_config->setEnvironment($wp_certificate['environment']);
+        $wp_config->setCommerceCode($wp_certificate['commerce_code']);
+        $wp_config->setPrivateKey($wp_certificate['private_key']);
+        $wp_config->setPublicCert($wp_certificate['public_cert']);
+        $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
 
-        $this->wp = new webpay($this->wp_config);
-
+        $wp = new webpay($wp_config);
 
         /** Monto de la transacción */
         $amount = 9990;
@@ -38,10 +42,10 @@ class WebpayController extends Controller
         $sessionId = uniqid();
 
         /** URL de retorno */
-        $urlReturn = "?action=getResult";
+        $urlReturn = "http://www.google.com";
 
         /** URL Final */
-        $urlFinal  = "?action=end";
+        $urlFinal  = "http://www.google.cl";
 
         $request = array(
           "amount"    => $amount,
@@ -52,7 +56,7 @@ class WebpayController extends Controller
         );
 
         /** Iniciamos Transaccion */
-        $result = $this->wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
+        $result = $wp->getNormalTransaction()->initTransaction(9990,rand(),uniqid(),'http://dev.apitransbanck.com/getResult','http://dev.apitransbanck.com/end');//->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
         dd($result);
 
 

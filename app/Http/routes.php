@@ -12,6 +12,12 @@
 */
 
 Route::get('test', 'WebpayController@index');
+Route::get('getResutl', function(){
+    echo "getResult";
+});
+Route::get('end', function(){
+    echo "end";
+});
 
 
 Route::get('/', function () {

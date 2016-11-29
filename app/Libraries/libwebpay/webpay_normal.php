@@ -2,6 +2,12 @@
 
 namespace App\Libraries\libwebpay;
 
+use DOMDocument;
+use SoapClient;
+use SoapValidation;
+use WSSESoap;
+use XMLSecurityKey;
+
 /**
  * @brief      Ecommerce Plugin for chilean Webpay
  * @category   Plugins/SDK
@@ -23,6 +29,7 @@ namespace App\Libraries\libwebpay;
  * See documentation and how to install at link site
  *
  */
+
 
 class transactionResultOutput {
 
@@ -150,6 +157,7 @@ class wsInitTransactionOutput {
 
 class WebPayNormal {
 
+
     var $soapClient;
     var $config;
 
@@ -175,7 +183,11 @@ class WebPayNormal {
     
     private static $classmap = array('getTransactionResult' => 'getTransactionResult', 'getTransactionResultResponse' => 'getTransactionResultResponse', 'transactionResultOutput' => 'transactionResultOutput', 'cardDetail' => 'cardDetail', 'wsTransactionDetailOutput' => 'wsTransactionDetailOutput', 'wsTransactionDetail' => 'wsTransactionDetail', 'acknowledgeTransaction' => 'acknowledgeTransaction', 'acknowledgeTransactionResponse' => 'acknowledgeTransactionResponse', 'initTransaction' => 'initTransaction', 'wsInitTransactionInput' => 'wsInitTransactionInput', 'wpmDetailInput' => 'wpmDetailInput', 'initTransactionResponse' => 'initTransactionResponse', 'wsInitTransactionOutput' => 'wsInitTransactionOutput');
 
-    function __construct($config) {
+  /**
+   * WebPayNormal constructor.
+   * @param $config
+   */
+  function __construct($config) {
         
         $this->config = $config;
         $privateKey = $this->config->getPrivateKey();
@@ -351,5 +363,62 @@ class WebPayNormal {
         $validationResult = $soapValidation->getValidationResult();
         return $validationResult === TRUE;
     }
+
+}
+
+class WSSecuritySoapClient extends SoapClient {
+
+  private $useSSL = false;
+  private $privateKey = "";
+  private $publicCert = "";
+
+  function __construct($wsdl, $privateKey, $publicCert, $options) {
+
+    $locationparts = parse_url($wsdl);
+    $this->useSSL = $locationparts['scheme'] == "https" ? true : false;
+    $this->privateKey = $privateKey;
+    $this->publicCert = $publicCert;
+
+    return parent::__construct($wsdl, $options);
+  }
+
+  function __doRequest($request, $location, $saction, $version, $one_way = 0) {
+
+    if ($this->useSSL) {
+      $locationparts = parse_url($location);
+      $location = 'https://';
+      if (isset($locationparts['host']))
+        $location .= $locationparts['host'];
+      if (isset($locationparts['port']))
+        $location .= ':' . $locationparts['port'];
+      if (isset($locationparts['path']))
+        $location .= $locationparts['path'];
+      if (isset($locationparts['query']))
+        $location .= '?' . $locationparts['query'];
+    }
+    $doc = new DOMDocument('1.0');
+
+    $doc->loadXML($request);
+    $objWSSE = new WSSESoap($doc);
+    $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array(
+      'type' => 'private'
+    ));
+
+    /** False para cargar en modo texto, true para archivo */
+    $objKey->loadKey($this->privateKey, FALSE);
+    $options = array(
+      "insertBefore" => TRUE
+    );
+    $objWSSE->signSoapDoc($objKey, $options);
+    $objWSSE->addIssuerSerial($this->publicCert);
+    $objKey = new XMLSecurityKey(XMLSecurityKey::AES256_CBC);
+    $objKey->generateSessionKey();
+    $retVal = parent::__doRequest($objWSSE->saveXML(), $location, $saction, $version);
+
+    $doc = new DOMDocument();
+    $doc->loadXML($retVal);
+
+    return $doc->saveXML();
+  }
 
 }
