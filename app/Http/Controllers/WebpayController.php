@@ -26,6 +26,38 @@ class WebpayController extends Controller
         $this->wp_config->setWebpayCert($this->wp_certificate['webpay_cert']);
 
         $this->wp = new webpay($this->wp_config);
+
+
+        /** Monto de la transacción */
+        $amount = 9990;
+
+        /** Orden de compra de la tienda */
+        $buyOrder = rand();
+
+        /** Código comercio de la tienda entregado por Transbank */
+        $sessionId = uniqid();
+
+        /** URL de retorno */
+        $urlReturn = "?action=getResult";
+
+        /** URL Final */
+        $urlFinal  = "?action=end";
+
+        $request = array(
+          "amount"    => $amount,
+          "buyOrder"  => $buyOrder,
+          "sessionId" => $sessionId,
+          "urlReturn" => $urlReturn,
+          "urlFinal"  => $urlFinal,
+        );
+
+        /** Iniciamos Transaccion */
+        $result = $this->wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
+        dd($result);
+
+
+
+
         return dd($this->wp);
     }
 

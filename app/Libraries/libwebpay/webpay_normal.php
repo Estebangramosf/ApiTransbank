@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Libraries\libwebpay;
+
 /**
  * @brief      Ecommerce Plugin for chilean Webpay
  * @category   Plugins/SDK
