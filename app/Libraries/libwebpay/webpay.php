@@ -1,7 +1,5 @@
 <?php
-
-
-
+namespace App\Libraries\libwebpay;
 /**
  * @author     Allware Ltda. (http://www.allware.cl)
  * @copyright  2015 Transbank S.A. (http://www.tranbank.cl)

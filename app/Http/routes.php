@@ -11,9 +11,7 @@
 |
 */
 
-Route::get('test', function(){
-
-});
+Route::get('test', 'WebpayController@index');
 
 
 Route::get('/', function () {
