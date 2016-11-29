@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Libraries\libwebpay\webpay;
 
+
+
 class WebpayController extends Controller
 {
     /**
@@ -17,7 +19,7 @@ class WebpayController extends Controller
     public function index()
     {
         #It's good looking
-        dd(webpay::class);
+        //dd(webpay::class);
         $this->wp = new webpay();
         return dd($this->wp);
     }

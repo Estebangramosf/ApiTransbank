@@ -1,5 +1,20 @@
 <?php
+
 namespace App\Libraries\libwebpay;
+
+/* Importing webpay classes */
+use App\Libraries\libwebpay\configuration;
+use App\Libraries\libwebpay\webpay_normal;
+use App\Libraries\libwebpay\webpay_mall_normal;
+use App\Libraries\libwebpay\webpay_nullify;
+use App\Libraries\libwebpay\webpay_capture;
+use App\Libraries\libwebpay\webpay_oneclick;
+use App\Libraries\libwebpay\webpay_complete;
+
+use App\Libraries\libwebpay\soap_wsse;
+use App\Libraries\libwebpay\soap_validation;
+use App\Libraries\libwebpay\soapclient;
+
 /**
  * @author     Allware Ltda. (http://www.allware.cl)
  * @copyright  2015 Transbank S.A. (http://www.tranbank.cl)
@@ -8,17 +23,20 @@ namespace App\Libraries\libwebpay;
  * @version    2.0.1
  */
 
-require_once(__DIR__ . '/soap/soap-wsse.php');
-require_once(__DIR__ . '/soap/soap-validation.php');
+/*
+require_once(__DIR__ . '/soap/soap_wsse.php');
+require_once(__DIR__ . '/soap/soap_validation.php');
 require_once(__DIR__ . '/soap/soapclient.php');
-
+*/
+/*
 include('configuration.php');
-include('webpay-normal.php');
-include('webpay-mall-normal.php');
-include('webpay-nullify.php');
-include('webpay-capture.php');
-include('webpay-oneclick.php');
-include('webpay-complete.php');
+include('webpay_normal.php');
+include('webpay_mall_normal.php');
+include('webpay_nullify.php');
+include('webpay_capture.php');
+include('webpay_oneclick.php');
+include('webpay_complete.php');
+*/
 
 class Webpay {
 

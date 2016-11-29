@@ -1,7 +1,7 @@
 <?php
 
 require_once('xmlseclibs.php');
-require_once('soap-wsse.php');
+require_once('soap_wsse.php');
 
 class WSSecuritySoapClient extends SoapClient {
     
