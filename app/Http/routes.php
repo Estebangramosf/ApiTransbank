@@ -11,8 +11,18 @@
 |
 */
 
-Route::get('test', 'WebpayController@index');
-Route::get('getResult/{token?}', 'WebpayController@getResult');
+use App\Http\Requests\Request;
+
+Route::get('webpaynormal', 'WebpayController@index');
+Route::post('getResult', 'WebpayController@store');
+
+Route::get('end', function(Request $request){
+    dd($request);
+});
+Route::get('webpay', 'WebpayController@index');
+
+
+
 Route::get('end', function(){
     echo "end";
 });

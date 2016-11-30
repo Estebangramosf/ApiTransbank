@@ -20,10 +20,6 @@ class WebpayController extends Controller
     public function __construct()
     {
 
-
-
-
-
     }
 
     /**
@@ -33,11 +29,8 @@ class WebpayController extends Controller
      */
     public function index()
     {
-        #It's good looking
-        //dd(webpay::class);
         $wp_config = new configuration();
         $wp_certificate = $this->cert_normal();
-        //dd($this->wp_config);
 
         $wp_config->setEnvironment($wp_certificate['environment']);
         $wp_config->setCommerceCode($wp_certificate['commerce_code']);
@@ -59,10 +52,10 @@ class WebpayController extends Controller
         $sessionId = uniqid();
 
         /** URL de retorno */
-        $urlReturn = "http://www.google.com";
+        $urlReturn = "http://dev.apitransbank.com/getResult";
 
         /** URL Final */
-        $urlFinal  = "http://www.google.cl";
+        $urlFinal  = "http://dev.apitransbank.com/end";
 
         $request = array(
           "amount"    => $amount,
@@ -76,82 +69,9 @@ class WebpayController extends Controller
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
 
         return view('webpay.index', ['result'=>$result]);
-
-        //return Redirect::to('/getResult/'.$result->token);
-
-        //$token = $result->token;
-
-        //$url = $result->url;
-
-        //Hasta acá viene el token bien
-        //var_dump($result);
-
-        //Hasta acá viene el certificado
-        //dd($wp_certificate);
-
-        //Hasta acá viene la configuracion seteada con los parametros
-        //dd($wp_config);
-
-        //$wp->getNormalTransaction()->getTransactionResult(['token',$token]);
-        //$result2 = $wp->getNormalTransaction()->getTransactionResult($token);
-
-        //dd($result2);
-
     }
 
 
-
-    public function getResult($token){
-
-
-
-
-
-        /*
-        #It's good looking
-        //dd(webpay::class);
-        $wp_config = new configuration();
-        $wp_certificate = $this->cert_normal();
-        //dd($this->wp_config);
-
-        $wp_config->setEnvironment($wp_certificate['environment']);
-        $wp_config->setCommerceCode($wp_certificate['commerce_code']);
-        $wp_config->setPrivateKey($wp_certificate['private_key']);
-        $wp_config->setPublicCert($wp_certificate['public_cert']);
-        $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
-
-        $wp = new webpay($wp_config);
-        */
-
-
-        /** Monto de la transacción */
-        //$amount = 9990;
-
-        /** Orden de compra de la tienda */
-        //$buyOrder = rand();
-
-        /** Código comercio de la tienda entregado por Transbank */
-        //$sessionId = uniqid();
-
-        /** URL de retorno */
-        //$urlReturn = "http://www.google.com";
-
-        /** URL Final */
-        //$urlFinal  = "http://www.google.cl";
-
-        /*
-        $request = array(
-          "amount"    => $amount,
-          "buyOrder"  => $buyOrder,
-          "sessionId" => $sessionId,
-          "urlReturn" => $urlReturn,
-          "urlFinal"  => $urlFinal,
-        );
-        */
-
-        //$result = $wp->getNormalTransaction()->getTransactionResult($token);
-        //dd($result);
-    }
 
 
     /**
@@ -172,7 +92,7 @@ class WebpayController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request);
     }
 
     /**
