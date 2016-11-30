@@ -11,6 +11,12 @@ use XMLSecurityKey;
 
 include (__DIR__ . '/initTransactionResponse.php');
 include (__DIR__ . '/wsInitTransactionOutput.php');
+include (__DIR__ . '/getTransactionResult.php');
+include (__DIR__ . '/getTransactionResultResponse.php');
+include (__DIR__ . '/transactionResultOutput.php');
+include (__DIR__ . '/cardDetail.php');
+include (__DIR__ . '/wsTransactionDetailOutput.php');
+include (__DIR__ . '/acknowledgeTransactionResponse.php');
 
 
 /**

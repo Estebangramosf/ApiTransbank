@@ -17,9 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace ctala\tbkwslib\classes;
-use ctala\tbkwslib\classes\wsTransactionDetail;
 
+include (__DIR__ . '/wsTransactionDetail.php');
 
 class wsTransactionDetailOutput extends wsTransactionDetail {
 

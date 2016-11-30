@@ -14,18 +14,10 @@
 use App\Http\Requests\Request;
 
 Route::get('webpaynormal', 'WebpayController@index');
-Route::post('getResult', 'WebpayController@store');
-
-Route::get('end', function(Request $request){
-    dd($request);
-});
-Route::get('webpay', 'WebpayController@index');
+Route::post('getResult', 'WebpayController@getResult');
+Route::post('end', 'WebpayController@end');
 
 
-
-Route::get('end', function(){
-    echo "end";
-});
 
 
 Route::get('/', function () {

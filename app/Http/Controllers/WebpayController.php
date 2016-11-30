@@ -92,7 +92,7 @@ class WebpayController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request);
+        dd($request->all());
     }
 
     /**
@@ -115,6 +115,44 @@ class WebpayController extends Controller
     public function edit($id)
     {
         //
+    }
+
+    public function getResult(Request $request){
+
+
+      $wp_config = new configuration();
+      $wp_certificate = $this->cert_normal();
+      $wp = new webpay($wp_config);
+
+      $wp_config->setEnvironment($wp_certificate['environment']);
+      $wp_config->setCommerceCode($wp_certificate['commerce_code']);
+      $wp_config->setPrivateKey($wp_certificate['private_key']);
+      $wp_config->setPublicCert($wp_certificate['public_cert']);
+      $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
+
+      $wp = new webpay($wp_config);
+
+      $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+
+      dd($result);
+
+
+
+      dd($request->all());
+      /*
+      foreach($request as $item){
+        echo '<pre>'; print_r($item->parameters); echo '</pre>';
+      }
+      */
+    }
+
+    public function end(Request $request){
+      dd($request->all());
+      /*
+      foreach($request as $item){
+        echo '<pre>'; print_r($item->parameters); echo '</pre>';
+      }
+      */
     }
 
     /**
