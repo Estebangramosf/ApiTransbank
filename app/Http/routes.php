@@ -12,9 +12,7 @@
 */
 
 Route::get('test', 'WebpayController@index');
-Route::get('getResutl', function(){
-    echo "getResult";
-});
+Route::get('getResult/{token?}', 'WebpayController@getResult');
 Route::get('end', function(){
     echo "end";
 });
