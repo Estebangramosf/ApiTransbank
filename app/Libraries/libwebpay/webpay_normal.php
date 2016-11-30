@@ -9,6 +9,8 @@ use SoapValidation;
 use WSSESoap;
 use XMLSecurityKey;
 
+include (__DIR__ . '/initTransactionResponse.php');
+include (__DIR__ . '/wsInitTransactionOutput.php');
 
 
 /**
@@ -115,12 +117,13 @@ class wpmDetailInput {
     var $ufFlag; //boolean
 
 }
-
+/*
 class initTransactionResponse {
 
     var $return; //wsInitTransactionOutput
 
 }
+*/
 
 class wsInitTransactionOutput {
 
@@ -220,8 +223,9 @@ class WebPayNormal {
 
     /** Inicia transacción con Webpay */
     function _initTransaction($initTransaction) {
-        //var_dump($this->soapClient);die();
+
         $initTransactionResponse = $this->soapClient->initTransaction($initTransaction);
+        //var_dump($initTransactionResponse);die();
         return $initTransactionResponse;
     }
 

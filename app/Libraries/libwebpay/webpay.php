@@ -13,7 +13,6 @@ namespace App\Libraries\libwebpay;
  * @license    GNU LGPL
  * @version    2.0.1
  */
-
 require_once(__DIR__ . '/soap_wsse.php');
 require_once(__DIR__ . '/soap_validation.php');
 require_once(__DIR__ . '/soapclient.php');
