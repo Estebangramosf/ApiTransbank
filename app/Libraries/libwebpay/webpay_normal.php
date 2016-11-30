@@ -302,7 +302,6 @@ class WebPayNormal {
     public function getTransactionResult($token) {
 
         try {
-
             $getTransactionResult = new getTransactionResult();
 
             $getTransactionResult->tokenInput = $token;
@@ -361,6 +360,7 @@ class WebPayNormal {
     }
 
 }
+
 
 class WSSecuritySoapClient extends SoapClient {
 

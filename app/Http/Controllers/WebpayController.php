@@ -18,11 +18,25 @@ class WebpayController extends Controller
 
     public function __construct()
     {
+
+
+
+
+
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
         #It's good looking
         //dd(webpay::class);
         $wp_config = new configuration();
         $wp_certificate = $this->cert_normal();
-                //dd($this->wp_config);
+        //dd($this->wp_config);
 
         $wp_config->setEnvironment($wp_certificate['environment']);
         $wp_config->setCommerceCode($wp_certificate['commerce_code']);
@@ -58,20 +72,6 @@ class WebpayController extends Controller
         /** Iniciamos Transaccion */
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
         dd($result);
-
-
-
-
-
-    }
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
 
     }
 
