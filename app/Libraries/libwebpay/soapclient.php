@@ -1,7 +1,18 @@
 <?php
 
+namespace App\Libraries\libwebpay;
+
 require_once('xmlseclibs.php');
-require_once('soap_wsse.php');
+//require_once('soap_wsse.php');
+
+use SoapClient;
+use DOMDocument;
+use Exception;
+use SoapValidation;
+use WSSESoap;
+use XMLSecurityKey;
+
+
 
 class WSSecuritySoapClient extends SoapClient {
     

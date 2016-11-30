@@ -3,26 +3,8 @@
 namespace App\Libraries\libwebpay;
 
 /* Importing webpay classes */
-use App\Libraries\libwebpay\configuration;
 
-
-
-
-
-use App\Libraries\libwebpay\webpay_normal;
-use App\Libraries\libwebpay\webpay_mall_normal;
-use App\Libraries\libwebpay\webpay_nullify;
-use App\Libraries\libwebpay\webpay_capture;
-use App\Libraries\libwebpay\webpay_oneclick;
-use App\Libraries\libwebpay\webpay_complete;
-
-use App\Libraries\libwebpay\soap_wsse;
-use App\Libraries\libwebpay\soap_validation;
-use App\Libraries\libwebpay\soapclient;
-
-use App\Libraries\libwebpay\WebPayNormal;
-use Exception;
-use SoapValidation;
+    use SoapClient;
 
 /**
  * @author     Allware Ltda. (http://www.allware.cl)
