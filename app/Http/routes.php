@@ -17,6 +17,7 @@ Route::get('webpaynormal', 'WebpayController@index');
 Route::post('getResult', 'WebpayController@getResult');
 Route::post('end', 'WebpayController@end');
 
+Route::post('getShoppingCart','WebpayController@getShoppingCart');
 
 
 

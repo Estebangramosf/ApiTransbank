@@ -146,6 +146,12 @@ class WebpayController extends Controller
       */
     }
 
+    public function getShoppingCart(Request $request){
+
+        return view('webpay.celmediaPago',['request'=>$request->all()]);
+        dd($request->all());
+    }
+
     public function end(Request $request){
       dd($request->all());
       /*
