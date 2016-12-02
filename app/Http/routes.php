@@ -12,7 +12,11 @@
 */
 
 Route::get('ws', 'WebserviceController@index');
+Route::get('config', 'ConfigController@index');
 
+Route::get('ss', function(){
+    return view('webservices.wsclotpc_server_ps.blade');
+});
 
 Route::get('webpaynormal', 'WebpayController@index');
 Route::post('getResult', 'WebpayController@getResult');
