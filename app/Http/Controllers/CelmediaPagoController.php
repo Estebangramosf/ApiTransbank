@@ -108,24 +108,40 @@ class CelmediaPagoController extends Controller
           return view('webpay.celmediaPago',['request'=>$request->all()]);
         }
 
+        /*
+        "TBK_MONTO" => "76.663"
+        "TBK_TIPO_TRANSACCION" => "TR_NORMAL"
+        "TBK_ORDEN_COMPRA" => "63"
+        "TBK_ID_SESION" => "63"
+        "TBK_RUT" => "180025553"
+        */
+
         //Se crea el objeto $userResult como resultado de la verificación del usuario
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
         $request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
-        if( $userResult->pts > $request->TBK_MONTO ){
+        if( $userResult->pts >= $request->TBK_MONTO ){
           //En esta parte se debiese hacer el canje normal sin problemas
+
           echo "Los puntos le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
+
+
 
         }else{
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
           //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
 
+
           echo "Los puntos no le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
-            'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO).'<br>'.
-            'Se debe generar el pago mediante transbank por los puntos restantes.';
+            'Total restante después del canje : '.($total = ($userResult->pts - $request->TBK_MONTO)).'<br>'.
+            'Se debe generar el pago mediante transbank por los puntos restantes. <br>'.
+            'Total en Pesos a Pagar con Transbank : $'.$total*-3;
+
+            return $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+
         }
 
 
@@ -136,6 +152,7 @@ class CelmediaPagoController extends Controller
 
 
     }
+
 
     //Funcion que verifica si el rut del usuario existe mediante request y devuelve al usuario como objeto de la clase
     //En caso que el usuario no exista, redirecciona al usuario

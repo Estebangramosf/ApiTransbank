@@ -20,12 +20,13 @@ class WebpayController extends Controller
 
     }
 
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($amount,$buyOrder,$sessionId)
     {
         $wp_config = new configuration();
         $wp_certificate = $this->cert_normal();
@@ -39,13 +40,13 @@ class WebpayController extends Controller
         $wp = new webpay($wp_config);
 
         /** Monto de la transacción */
-        $amount = 9990;
+        $a = $amount; //9990;
 
         /** Orden de compra de la tienda */
-        $buyOrder = rand();
+        $bO = $buyOrder; //rand();
 
         /** Código comercio de la tienda entregado por Transbank */
-        $sessionId = uniqid();
+        $sId = $sessionId;//uniqid();
 
         /** URL de retorno */
         $urlReturn = "http://dev.apitransbank.com/getResult";
