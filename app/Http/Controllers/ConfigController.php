@@ -11,53 +11,30 @@ use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 class ConfigController extends Controller
 {
 
-    private $db;
-    private $Sendws;
-    private $CanjeWs;
-    private $OpUrlWs;
+    var $db;
+    var $Sendws;
+    var $CanjeWs;
+    var $OpUrlWs;
 
-    private $WSCLOTPC_Tiempo_OTPC;
+    var $WSCLOTPC_Tiempo_OTPC;
 
-    private $WSDL_SEND_ABOUT;
-    private $WSDL_SEND_FROM;
-    private $WSDL_SEND_HOST;
+    var $WSDL_SEND_ABOUT;
+    var $WSDL_SEND_FROM;
+    var $WSDL_SEND_HOST;
 
-    private $WSDL_SEND_USER;
-    private $WSDL_SEND_PASS;
-    private $WSDL_SEND_MAIL;
+    var $WSDL_SEND_USER;
+    var $WSDL_SEND_PASS;
+    var $WSDL_SEND_MAIL;
 
-    private $WSDL_SEND_USER_PS;
-    private $WSDL_SEND_PASS_PS;
-    private $WSDL_SEND_MAIL_PS;
+    var $WSDL_SEND_USER_PS;
+    var $WSDL_SEND_PASS_PS;
+    var $WSDL_SEND_MAIL_PS;
 
-    private $tasa_conv_CI;
+    var $tasa_conv_CI;
 
 
     public function __construct()
     {
-
-
-        SoapWrapper::add(function ($service) {
-            $service
-              ->name('currency')
-              ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop/wscl/wsclotpc_server_ps.php?wsdl')
-              ->trace(true);
-        });
-
-        $data = [
-          'rut'         => '167417906',
-          'usuario'     => 'tienda_ps',
-          'origen'      => 'Login WEB OTPC',
-          'password'    => '0x552A6798E1F1BCF715EFDB1E1DDC0874',
-          'idproveedor' => '8'
-        ];
-
-// Using the added service
-        SoapWrapper::service('currency', function ($service) use ($data) {
-            dd($service->call('ConsultaPuntosWSCLOTPC', [$data]));
-            var_dump($service->call('Otherfunction'));
-        });
-
 
         $this->Sendws = 'http://celmediainfo.cl/celmedia_chile/2138_WSDLCLOPCorpbanca/WS_MensajeriaCLOPCorpbanca.php?wsdl';
         $this->CanjeWs = 'http://190.196.23.186/clop/ws/server.php?wsdl';
@@ -77,9 +54,6 @@ class ConfigController extends Controller
         $this->WSDL_SEND_MAIL_PS = 'promoservice@canjeonline.cl';
 
         $this->tasa_conv_CI = '3';
-
-
-
 
     }
 
