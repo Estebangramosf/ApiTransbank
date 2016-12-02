@@ -14,6 +14,7 @@ class CreateWebpayPagosTable extends Migration
     {
         Schema::create('webpay_pagos', function (Blueprint $table) {
             $table->increments('id');
+            /*
             $table->integer('pago_id');
             $table->integer('monto_puntos',10);
             $table->integer('monto_dinero',10);
@@ -35,6 +36,7 @@ class CreateWebpayPagosTable extends Migration
             $table->string('tp_transaction');
             $table->date('tpago');
             $table->date('hora_pago');
+            */
             $table->timestamps();
         });
     }

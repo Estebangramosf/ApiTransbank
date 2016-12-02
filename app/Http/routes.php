@@ -22,7 +22,7 @@ Route::post('getResult', 'WebpayController@getResult');
 
 Route::post('end', 'WebpayController@end');
 
-Route::post('getShoppingCart','WebpayController@getShoppingCart');
+Route::post('getShoppingCart','CelmediaPagoController@getShoppingCart');
 
 
 

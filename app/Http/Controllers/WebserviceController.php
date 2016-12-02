@@ -7,34 +7,13 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
+use Mockery\CountValidator\Exception;
 
 class WebserviceController extends Controller
 {
 
     public function __construct()
     {
-
-        SoapWrapper::add(function ($service) {
-            $service
-              ->name('currency')
-              ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop/wscl/wsclotpc_server_ps.php?wsdl')
-              ->trace(true);
-        });
-
-        $data = [
-          'rut'         => '167417906',
-          'usuario'     => 'tienda_ps',
-          'origen'      => 'Login WEB OTPC',
-          'password'    => '0x552A6798E1F1BCF715EFDB1E1DDC0874',
-          'idproveedor' => '8'
-        ];
-
-        // Using the added service
-        SoapWrapper::service('currency', function ($service) use ($data) {
-            dd($service->call('ConsultaPuntosWSCLOTPC', [$data]));
-            var_dump($service->call('Otherfunction'));
-        });
-
 
 
     }
@@ -117,4 +96,7 @@ class WebserviceController extends Controller
     {
         //
     }
+
+
+
 }
