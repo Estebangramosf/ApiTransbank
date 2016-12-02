@@ -16,7 +16,6 @@ class WebpayController extends Controller
     private $webpay_config;
     private $webpay_certificate;
 
-
     public function __construct()
     {
 
@@ -39,8 +38,6 @@ class WebpayController extends Controller
         $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
 
         $wp = new webpay($wp_config);
-
-
 
         /** Monto de la transacción */
         $amount = 9990;
