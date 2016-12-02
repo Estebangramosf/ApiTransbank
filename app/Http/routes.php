@@ -11,7 +11,8 @@
 |
 */
 
-use App\Http\Requests\Request;
+Route::get('ws', 'WebserviceController@index');
+
 
 Route::get('webpaynormal', 'WebpayController@index');
 Route::post('getResult', 'WebpayController@getResult');
