@@ -123,24 +123,28 @@ class CelmediaPagoController extends Controller
         if( $userResult->pts >= $request->TBK_MONTO ){
           //En esta parte se debiese hacer el canje normal sin problemas
 
+          /*
           echo "Los puntos le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
-
-
+          */
+          echo "Realización de canje normal";
 
         }else{
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
           //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
 
-
+          /*
           echo "Los puntos no le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($total = ($userResult->pts - $request->TBK_MONTO)).'<br>'.
             'Se debe generar el pago mediante transbank por los puntos restantes. <br>'.
             'Total en Pesos a Pagar con Transbank : $'.$total*-3;
+          */
 
-            return $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+          //$this->generateSwap();
+          $total = ($userResult->pts - $request->TBK_MONTO);
+          return $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
 
         }
 
@@ -151,7 +155,8 @@ class CelmediaPagoController extends Controller
 
 
 
-    }
+    }//End function getShoppingCart()
+
 
 
     //Funcion que verifica si el rut del usuario existe mediante request y devuelve al usuario como objeto de la clase
@@ -171,7 +176,7 @@ class CelmediaPagoController extends Controller
           }
         }
       }catch(Exception $e){}
-    }
+    }//End function verifyRUTExistanceAndGetUser()
 
     //Funcion que verifica los puntos de un cliente y registra al usuario en caso que no exista en la base CelmediaPago
     public function ConsultaPuntosWSCLOTPC($rut){
@@ -228,8 +233,63 @@ class CelmediaPagoController extends Controller
       } catch(Exception $e) {
 
       }
-    }
+    }//End function ConsultaPuntosWSCLOTPC()
 
+    public function generateSwap($rut){
+      //Se asegura en caso de caidas
+      try {
+        //Se instancia un nuevo comunicador de webservice con SoapWrapper
+        SoapWrapper::add(function ($service) {
+          $service
+            ->name('currency')
+            ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop/wscl/wsclotpc_server_ps.php?wsdl')
+            ->trace(true);
+        });
+        //Se definen los parametros que consume el webservice
+        $data = [
+          'rut'         => $rut,
+          'usuario'     => 'tienda_ps',
+          'origen'      => 'Login WEB OTPC',
+          'password'    => '0x552A6798E1F1BCF715EFDB1E1DDC0874',
+          'idproveedor' => '8'
+        ];
+
+
+        // Se usa el nuevo webservice creado
+        SoapWrapper::service('currency', function ($service) use ($data) {
+          $ClientData = $service->call('ConsultaPuntosWSCLOTPC', [$data]);
+
+          //Se busca al usuario en la base de datos local
+          $user = User::where('rut', (int)$ClientData->rut)->get();
+          //se verifica si existe y lo guarda en una veriable
+          if(isset($user[0])){
+            $user = json_decode(json_encode($user[0]));
+          }
+          //Se verifica si el tiene rut válido
+          if(isset($user->rut)){
+            //Se busca y actualizan los puntos del usuario, luego se guarda
+            $user=User::findOrFail($user->id);
+            $user->pts = $ClientData->SaldoPuntos;//30000;//
+            $user->save();
+            return true;
+          }else{
+            //En caso que el usuario no exista en base se registra y se guarda
+            User::create([
+              'name'=>$ClientData->Nombre,
+              'rut'=>$ClientData->rut,
+              'pts'=>$ClientData->SaldoPuntos
+            ])->save();
+            return true;
+          }
+
+          //dd($service->call('ConsultaPuntosWSCLOTPC', [$data]));
+          //var_dump($service->call('Otherfunction'));
+        });
+
+      } catch(Exception $e) {
+
+      }
+    }//End function generateSwap()
 
 
 }

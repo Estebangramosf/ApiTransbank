@@ -49,10 +49,12 @@ class WebpayController extends Controller
         $sId = $sessionId;//uniqid();
 
         /** URL de retorno */
-        $urlReturn = "http://dev.apitransbank.com/getResult";
+        //$urlReturn = "http://dev.apitransbank.com/getResult";
+        $urlReturn = "http://192.168.1.192/getResult";
 
         /** URL Final */
-        $urlFinal  = "http://dev.apitransbank.com/end";
+        //$urlFinal  = "http://dev.apitransbank.com/end";
+        $urlFinal  = "http://192.168.1.192/end";
 
         $request = array(
           "amount"    => $amount,
@@ -131,6 +133,8 @@ class WebpayController extends Controller
 
       $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
+        return view('webpay.exito');
+
       dd($result);
 
 
@@ -146,6 +150,7 @@ class WebpayController extends Controller
 
 
     public function end(Request $request){
+        return view('webpay.end');
       dd($request->all());
       /*
       foreach($request as $item){
