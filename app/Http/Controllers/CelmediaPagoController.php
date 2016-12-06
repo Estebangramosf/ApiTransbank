@@ -104,9 +104,17 @@ class CelmediaPagoController extends Controller
       try{
         //Check if Rut Exist
         //
+        /*
         if ($_SERVER['REMOTE_ADDR'] == '172.16.4.100'){
           return view('webpay.celmediaPago',['request'=>$request->all()]);
         }
+        */
+        //guarda los datos
+        //trae id de registro
+        //posteo a vista los datos
+        //usuario ingresa t. credito 4 ult. digitos
+        //usuario continua proceso
+        //se valida
 
         /*
         "TBK_MONTO" => "76.663"
@@ -120,15 +128,19 @@ class CelmediaPagoController extends Controller
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
         $request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
-        if( $userResult->pts >= $request->TBK_MONTO ){
-          //En esta parte se debiese hacer el canje normal sin problemas
+        if( $userResult->pts >= $request->TBK_MONTO && !empty($request->TBK_RUT) ){
+          //En esta parte se debiese hacer el canje normal sin webpay_transbank
 
           /*
           echo "Los puntos le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
           */
-          echo "Realización de canje normal";
+
+
+
+
+          $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0);
 
         }else{
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
@@ -142,9 +154,10 @@ class CelmediaPagoController extends Controller
             'Total en Pesos a Pagar con Transbank : $'.$total*-3;
           */
 
+          //$total = ($userResult->pts - $request->TBK_MONTO);
+          //$this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
           //$this->generateSwap();
-          $total = ($userResult->pts - $request->TBK_MONTO);
-          return $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+          return true;
 
         }
 
@@ -235,55 +248,43 @@ class CelmediaPagoController extends Controller
       }
     }//End function ConsultaPuntosWSCLOTPC()
 
-    public function generateSwap($rut){
+    public function generateSwap($rut,$monto,$otpc,$copago){
       //Se asegura en caso de caidas
       try {
         //Se instancia un nuevo comunicador de webservice con SoapWrapper
         SoapWrapper::add(function ($service) {
           $service
-            ->name('currency')
+            ->name('ConfirmaCanje')
             ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop/wscl/wsclotpc_server_ps.php?wsdl')
             ->trace(true);
         });
-        //Se definen los parametros que consume el webservice
+
         $data = [
-          'rut'         => $rut,
-          'usuario'     => 'tienda_ps',
-          'origen'      => 'Login WEB OTPC',
-          'password'    => '0x552A6798E1F1BCF715EFDB1E1DDC0874',
-          'idproveedor' => '8'
+          'usuario'=>'celmediapago',
+          'password'=>'0x552A6798E1F1BCF715EFDB1E1DDC0874',
+          'idproveedor'=>'9',
+          //'rut'=>'171058902',//$rut,
+          'rut'=>'180025553',//$rut,
+          'origen'=>'PRUEBAS_JCH',
+          'monto'=>'1000',
+          'copago'=>'0',
+          'uni_canje'=>'0',
+          'descripcion'=>'Canje de Prueba JCH',
+          'cod_prod_prov'=>'COD001',
+          'id_grupo'=>'10',
+          'id_categoria'=>'36',
+          'id_subcategoria'=>'187',
+          'hash_otpc'=>'147050',
+          'tdv_otpc'=>'31',
         ];
 
-
         // Se usa el nuevo webservice creado
-        SoapWrapper::service('currency', function ($service) use ($data) {
-          $ClientData = $service->call('ConsultaPuntosWSCLOTPC', [$data]);
+        SoapWrapper::service('ConfirmaCanje', function ($service) use ($data) {
 
-          //Se busca al usuario en la base de datos local
-          $user = User::where('rut', (int)$ClientData->rut)->get();
-          //se verifica si existe y lo guarda en una veriable
-          if(isset($user[0])){
-            $user = json_decode(json_encode($user[0]));
-          }
-          //Se verifica si el tiene rut válido
-          if(isset($user->rut)){
-            //Se busca y actualizan los puntos del usuario, luego se guarda
-            $user=User::findOrFail($user->id);
-            $user->pts = $ClientData->SaldoPuntos;//30000;//
-            $user->save();
-            return true;
-          }else{
-            //En caso que el usuario no exista en base se registra y se guarda
-            User::create([
-              'name'=>$ClientData->Nombre,
-              'rut'=>$ClientData->rut,
-              'pts'=>$ClientData->SaldoPuntos
-            ])->save();
-            return true;
-          }
+          $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
+          
+          dd($Result);
 
-          //dd($service->call('ConsultaPuntosWSCLOTPC', [$data]));
-          //var_dump($service->call('Otherfunction'));
         });
 
       } catch(Exception $e) {
