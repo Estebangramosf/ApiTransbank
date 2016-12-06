@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\HistorialCanje;
 use Illuminate\Console\Parser;
 use Illuminate\Http\Request;
 
@@ -131,18 +132,38 @@ class CelmediaPagoController extends Controller
         if( $userResult->pts >= $request->TBK_MONTO && !empty($request->TBK_RUT) ){
           //En esta parte se debiese hacer el canje normal sin webpay_transbank
 
+
+          //return view('webpay.exito');
+
           /*
           echo "Los puntos le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
           */
 
+          //Se traen los datos del canje, la respuesta del canje
+
+          $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+          if(isset($historial[0])){
+            return "Ya existe una transacción con esta orden de compra";
+            $historial = json_decode(json_encode($historial[0]));
+          }
+
+          //Se genera el canje y solicitud de canje
+          $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
 
 
+          $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+          //Aqui debo retornar estos valores a la vista que me generará el post
+          $historial = json_decode(json_encode($historial[0]));
+          return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
+          //dd($historial);
 
-          $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0);
 
         }else{
+          //return view('webpay.celmediaPago');
+
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
           //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
 
@@ -248,7 +269,7 @@ class CelmediaPagoController extends Controller
       }
     }//End function ConsultaPuntosWSCLOTPC()
 
-    public function generateSwap($rut,$monto,$otpc,$copago){
+    public function generateSwap($rut,$monto,$otpc,$copago,$ordenCompraCarrito){
       //Se asegura en caso de caidas
       try {
         //Se instancia un nuevo comunicador de webservice con SoapWrapper
@@ -279,12 +300,44 @@ class CelmediaPagoController extends Controller
         ];
 
         // Se usa el nuevo webservice creado
-        SoapWrapper::service('ConfirmaCanje', function ($service) use ($data) {
+        SoapWrapper::service('ConfirmaCanje', function ($service) use ($data,$ordenCompraCarrito) {
+
 
           $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
-          
-          dd($Result);
 
+          if($Result->RC == '227'){
+            return false;
+          }
+
+
+          if(count(HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get())==0){
+            HistorialCanje::create([
+              'user_rut'=>$Result->rut,
+              'rc'=>$Result->RC,
+              'fecha_canje'=>$Result->fecha_canje,
+              'id_transaccion'=>$Result->id_transaccion,
+              'saldo_final'=>$Result->saldo_final,
+              'puntos'=>$Result->puntos,
+              'ordenCompraCarrito'=>$ordenCompraCarrito,
+            ])->save();
+            return true;
+          }else{
+            return true;
+            /*
+            if(isset($historial[0])){
+              $historial = json_decode(json_encode($historial[0]));
+            }
+            if(isset($historial->rut)){
+              //Se busca y actualizan los puntos del usuario, luego se guarda
+              $historial=HistorialCanje::findOrFail($historial->id);
+              dd($historial);
+              $historial->save();
+              return true;
+            }else{
+              return true;
+            }
+            */
+          }
         });
 
       } catch(Exception $e) {
