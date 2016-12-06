@@ -141,6 +141,7 @@ class CelmediaPagoController extends Controller
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
           */
 
+
           //Se traen los datos del canje, la respuesta del canje
 
           $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
@@ -175,8 +176,11 @@ class CelmediaPagoController extends Controller
             'Total en Pesos a Pagar con Transbank : $'.$total*-3;
           */
 
-          //$total = ($userResult->pts - $request->TBK_MONTO);
-          //$this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+
+          $total = ($userResult->pts - $request->TBK_MONTO);
+
+          dd($this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION));
+
           //$this->generateSwap();
           return true;
 
@@ -285,17 +289,18 @@ class CelmediaPagoController extends Controller
           'password'=>'0x552A6798E1F1BCF715EFDB1E1DDC0874',
           'idproveedor'=>'9',
           //'rut'=>'171058902',//$rut,
-          'rut'=>'180025553',//$rut,
+          //'rut'=>'180025553',//$rut,
+          'rut'=>$rut,//$rut,
           'origen'=>'PRUEBAS_JCH',
-          'monto'=>'1000',
-          'copago'=>'0',
+          'monto'=>$monto,
+          'copago'=>$copago,
           'uni_canje'=>'0',
           'descripcion'=>'Canje de Prueba JCH',
           'cod_prod_prov'=>'COD001',
           'id_grupo'=>'10',
           'id_categoria'=>'36',
           'id_subcategoria'=>'187',
-          'hash_otpc'=>'147050',
+          'hash_otpc'=>$otpc,
           'tdv_otpc'=>'31',
         ];
 
