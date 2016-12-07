@@ -71,8 +71,6 @@
             return true;
           }, 1000);
 
-
-
           function reddirect(){
             timeReddirect = 3000;
             document.form1.submit();

@@ -146,6 +146,8 @@ class WebpayController extends Controller
 
       $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
+
+
       return view('webpay.exito');
 
       dd($result);

@@ -129,8 +129,8 @@ class CelmediaPagoController extends Controller
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
 
-        $request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
-
+        //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
+        $request->TBK_MONTO=round($request->TBK_MONTO,0);
 
         if( $userResult->pts >= $request->TBK_MONTO){
         //if( false){
@@ -153,7 +153,6 @@ class CelmediaPagoController extends Controller
 
 
           //if(isset($historial[0])){
-
 
 
           //Se genera el canje y solicitud de canje
@@ -195,11 +194,31 @@ class CelmediaPagoController extends Controller
 
           $total = ($userResult->pts - $request->TBK_MONTO);
 
+
+          $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
+
+          $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+          if(count($historial)>0){
+
+            $historial = json_decode(json_encode($historial[0]));
+            return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
+
+          }
+
+          $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+          //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
+          if(count($historial)==0){
+            return view('webpay.canjePendiente');
+          }
+
+
           $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
 
           return view('webpay.index', ['result'=>$result]);
 
-          //$this->generateSwap();
+
 
 
         }
@@ -342,6 +361,7 @@ class CelmediaPagoController extends Controller
               'id_transaccion'=>$Result->id_transaccion,
               'saldo_final'=>$Result->saldo_final,
               'puntos'=>$Result->puntos,
+              'copago'=>$Result->copago,
               'ordenCompraCarrito'=>$ordenCompraCarrito,
               'estado'=>'encanje',
             ])->save();
