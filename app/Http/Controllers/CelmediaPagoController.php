@@ -128,9 +128,10 @@ class CelmediaPagoController extends Controller
         //Se crea el objeto $userResult como resultado de la verificación del usuario
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
-
         //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
         $request->TBK_MONTO=round($request->TBK_MONTO,0);
+
+
 
         if( $userResult->pts >= $request->TBK_MONTO){
         //if( false){

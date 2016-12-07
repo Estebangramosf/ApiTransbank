@@ -149,22 +149,16 @@ class WebpayController extends Controller
 
       //traer los datos del carro $result->buyOrder
 
-
-
-
       $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$result->buyOrder)->get();
 
-
-
-      if(count($historial)>0){
-
+      if(count($historial)==1){
         $historial = json_decode(json_encode($historial[0]));
-
         return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
-
+      }else{
+        return view('webpay.canjePendiente');
       }
 
-      $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+      $historial = HistorialCanje::where('ordenCompraCarrito',$result->buyOrder)->get();
 
       //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
       if(count($historial)==0){
