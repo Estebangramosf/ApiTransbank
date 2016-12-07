@@ -88,7 +88,7 @@
             if(timeReddirect==0){reddirect();}
             return true;
           }, 1000);
-          
+
           var width = 0;
           setInterval(function(){
             width += 0.5;
