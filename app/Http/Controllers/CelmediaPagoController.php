@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use Exception;
 use Illuminate\Console\Parser;
 use Illuminate\Http\Request;
 
@@ -25,105 +26,8 @@ class CelmediaPagoController extends Controller
       $this->WebpayController = new WebpayController();
     }
 
-  /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
     public function getShoppingCart(Request $request){
       try{
-        //Check if Rut Exist
-        //
-        /*
-        if ($_SERVER['REMOTE_ADDR'] == '172.16.4.100'){
-          return view('webpay.celmediaPago',['request'=>$request->all()]);
-        }
-        */
-        //guarda los datos
-        //trae id de registro
-        //posteo a vista los datos
-        //usuario ingresa t. credito 4 ult. digitos
-        //usuario continua proceso
-        //se valida
-
-        /*
-        "TBK_MONTO" => "76.663"
-        "TBK_TIPO_TRANSACCION" => "TR_NORMAL"
-        "TBK_ORDEN_COMPRA" => "63"
-        "TBK_ID_SESION" => "63"
-        "TBK_RUT" => "180025553"
-        */
 
         //Se crea el objeto $userResult como resultado de la verificación del usuario
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
@@ -134,29 +38,12 @@ class CelmediaPagoController extends Controller
 
 
         if( $userResult->pts >= $request->TBK_MONTO){
-        //if( false){
-          //En esta parte se debiese hacer el canje normal sin webpay_transbank
-
-
-
-
           /*
           echo "Los puntos le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
           */
 
-
-          //Se traen los datos del canje, la respuesta del canje
-
-          //$historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
-
-
-          //if(isset($historial[0])){
-
-
-          //Se genera el canje y solicitud de canje
           $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
 
 
@@ -176,12 +63,7 @@ class CelmediaPagoController extends Controller
             return view('webpay.canjePendiente');
           }
 
-
-
         }else{
-
-          //return view('webpay.exito');
-          //return view('webpay.celmediaPago');
 
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
           //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
@@ -201,25 +83,18 @@ class CelmediaPagoController extends Controller
           $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
           $result = '';
           if(count($historial)>0){
-
             $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
-
-
           }
 
           $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
-
           //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
           if(count($historial)==0){
             return view('webpay.canjePendiente');
           }
 
-
           return view('webpay.index', ['result'=>$result]);
 
         }
-
 
       }catch(Exception $e){
 
@@ -364,6 +239,7 @@ class CelmediaPagoController extends Controller
             return true;
           }else{
             return true;
+
             /*
             if(isset($historial[0])){
               $historial = json_decode(json_encode($historial[0]));

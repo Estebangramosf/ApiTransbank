@@ -1,20 +1,3 @@
-{{--
-{#168 ▼
-  +"id": 3
-  +"user_rut": "116138328"
-  +"rc": "00"
-  +"fecha_canje": "Dec  7 2016 12:59:20:507PM"
-  +"id_transaccion": "22567530"
-  +"saldo_final": "0"
-  +"puntos": "100000"
-  +"copago": "460956"
-  +"ordenCompraCarrito": "101"
-  +"estado": "encanje"
-  +"created_at": "2016-12-07 15:59:26"
-  +"updated_at": "2016-12-07 15:59:26"
-}
---}}
-
 <!DOCTYPE html>
 <html>
 <head>

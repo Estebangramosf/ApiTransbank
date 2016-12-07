@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ApiTransbank</title>
+  <title>Transacción finalizada</title>
 
   <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
+  <!-- Latest compiled and minified CSS -->
+  <script
+    src="https://code.jquery.com/jquery-1.12.4.js"
+    integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+    crossorigin="anonymous"></script>
+
   <!-- Latest compiled and minified CSS -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -12,6 +18,9 @@
 
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+
   <style>
     html, body {
       height: 100%;
@@ -49,11 +58,54 @@
 <body>
 <div class="container">
   <div class="content">
-    <div class="title">ApiTransbank</div>
+    <div class="title">Transacción finalizada</div>
 
     <div class="sub-title">
-      Transacción finalizada o anulada.<br>
+      <span id="wait">Espere por favor . </span><br>
 
+      <div class="progress">
+        <div id="progressBar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+          <span class="sr-only">Espere por favor...</span>
+        </div>
+      </div>
+
+      <span id="reddirect">Redireccionando en </span>
+      <form id="form1" name="form1" method="get" action="http://ecorpbancadesa.celmedia.cl/">
+      </form>
+
+
+      <script>
+        $(function () {
+
+          var timeReddirect = 3000;
+
+          setInterval(function(){
+            console.log('Redireccionando en => '+(timeReddirect/1000));
+            $('#reddirect').text('Redireccionando en '+(timeReddirect/1000));
+            var wait = $('#wait').text() +' .';
+            $('#wait').text(wait);
+            timeReddirect -= 1000;
+            if(timeReddirect==0){reddirect();}
+            return true;
+          }, 1000);
+          
+          var width = 0;
+          setInterval(function(){
+            width += 0.5;
+            console.log();
+            $('#progressBar').attr('style','width:'+width+'%;');
+
+
+          },10);
+
+          function reddirect(){
+            timeReddirect = 3000;
+            console.log('Redireccionando');
+            document.form1.submit();
+          }
+
+        });
+      </script>
 
 
   </div>

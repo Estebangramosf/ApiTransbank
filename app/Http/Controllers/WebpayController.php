@@ -21,12 +21,6 @@ class WebpayController extends Controller
 
     }
 
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index($a,$bO,$sId)
     {
         $wp_config = new configuration();
@@ -60,16 +54,6 @@ class WebpayController extends Controller
         $urlFinal  = "http://dev.apitransbank.com/end";
         //$urlFinal  = "http://192.168.1.192/end";
 
-      /*
-        dd([
-          'amount'=>$amount,
-          'butOrder'=>$buyOrder,
-          'sessionId'=>$sessionId,
-          'urlReturn'=>$urlReturn,
-          'urlFinal'=>$urlFinal
-        ]);
-      */
-
         $request = array(
           "amount"    => $amount,
           "buyOrder"  => $buyOrder,
@@ -82,52 +66,6 @@ class WebpayController extends Controller
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
 
         return $result;
-    }
-
-
-
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        dd($request->all());
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
     }
 
     public function getResult(Request $request){
@@ -187,28 +125,6 @@ class WebpayController extends Controller
       */
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 
     public function cert_normal(){
         return $certificate = array(
