@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
 
 class ReportController extends Controller
 {
+    private $users;
+    public function users(){
+      $this->users = User::all();
+
+      return view('reports.users', ['users'=>$this->users]);
+    }
+
     /**
      * Display a listing of the resource.
      *
