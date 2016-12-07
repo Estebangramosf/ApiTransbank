@@ -196,16 +196,16 @@
               </div>
             </a>
           </li>
-          {{--
-                    <li class="{!! Request::path()=="item1"?'active':'' !!}">
-            <a href="{!! url('/#!') !!}"><i class="fa fa-fw fa-dashboard"></i>
+          <li class="{!! Request::path()=="transactions"?'active':'' !!}">
+            <a href="{!! url('/transactions') !!}"><i class="fa fa-fw fa-dashboard"></i>
               <div align="center">
                 <img class="out-dashboard-item" style="float:left;"
                      src="{!! asset('img/glyphicons/glyphicons/png/glyphicons-43-pie-chart.png') !!}" alt="">
-                Item 2
+                Transacciones
               </div>
             </a>
           </li>
+          {{--
 
           <li class="{!! Request::path()=="item2"?'active':'' !!}">
             <a href="{!! url('/#!') !!}"><i class="fa fa-fw fa-dashboard"></i>

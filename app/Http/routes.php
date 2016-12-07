@@ -14,7 +14,10 @@
 Route::get('ws', 'WebserviceController@index');
 Route::get('config', 'ConfigController@index');
 
+
+//Routes for statistics
 Route::get('users','ReportController@users');
+Route::get('transactions','ReportController@transactions');
 
 //Route::get('webpaynormal', 'WebpayController@index');
 
