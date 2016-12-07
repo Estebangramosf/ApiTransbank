@@ -14,12 +14,11 @@ class CreateWebpayPagosTable extends Migration
     {
         Schema::create('webpay_pagos', function (Blueprint $table) {
             $table->increments('id');
-            /*
             $table->integer('pago_id');
-            $table->integer('monto_puntos',10);
-            $table->integer('monto_dinero',10);
-            $table->integer('diferencia',10);
-            $table->integer('estado_pago',2);
+            $table->integer('monto_puntos');
+            $table->integer('monto_dinero');
+            $table->integer('diferencia');
+            $table->integer('estado_pago');
             $table->string('ord_compra');
             $table->string('id_sesion');
             $table->date('fh_transaccion');
@@ -36,7 +35,7 @@ class CreateWebpayPagosTable extends Migration
             $table->string('tp_transaction');
             $table->date('tpago');
             $table->date('hora_pago');
-            */
+
             $table->timestamps();
         });
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use App\WebpayPago;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -65,6 +66,13 @@ class WebpayController extends Controller
         /** Iniciamos Transaccion */
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
 
+        //Guardamos el token para despues actualizar con el resto de la información
+        $WebpayPago = new WebpayPago();
+        $WebpayPago->token_ws = $result->token;
+        $WebpayPago->save();
+
+        //dd($result);
+
         return $result;
     }
 
@@ -84,6 +92,74 @@ class WebpayController extends Controller
       $wp = new webpay($wp_config);
 
       $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+
+      dd($result);
+
+      $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
+      $WebpayPago = $WebpayPago[0];
+      $WebpayPago->accounting_date = $result->accountingDate;
+      $WebpayPago->ord_compra = $result->buyOrder;
+      $WebpayPago->card_number = $result->cardDetail->cardNumber;
+      $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
+      $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
+      $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
+      $WebpayPago->response_code = $result->detailOutput->responseCode;
+      $WebpayPago->monto_dinero = $result->detailOutput->amount;
+
+
+
+      $WebpayPago->save();
+
+      /*
+
+            transactionResultOutput {#163 ▼
+              +accountingDate: "1207"
+              +buyOrder: "108"
+              +cardDetail: cardDetail {#169 ▼
+                +cardNumber: "6623"
+                +cardExpirationDate: null
+              }
+              +detailOutput: wsTransactionDetailOutput {#165 ▼
+                +authorizationCode: "1213"
+                +paymentTypeCode: "VN"
+                +responseCode: 0
+                +sharesAmount: null
+                +sharesNumber: 0
+                +amount: "87978"
+                +commerceCode: "597020000541"
+                +buyOrder: "108"
+              }
+              +sessionId: "108"
+              +transactionDate: "2016-12-07T18:32:39.536-03:00"
+              +urlRedirection: "https://webpay3gint.transbank.cl/filtroUnificado/voucher.cgi"
+              +VCI: "TSY"
+            }
+
+            $table->increments('id');
+            $table->integer('pago_id');
+            $table->integer('monto_puntos');
+            $table->integer('monto_dinero');
+            $table->integer('diferencia');
+            $table->integer('estado_pago');
+            $table->string('ord_compra');
+            $table->string('id_sesion');
+            $table->date('fh_transaccion');
+            $table->string('token_ws');
+            $table->string('accounting_date');
+            $table->string('card_detail');
+            $table->string('card_number');
+            $table->string('card_expiration_date');
+            $table->string('authorization_code');
+            $table->string('payment_type_code');
+            $table->string('response_code');
+            $table->string('transaction_date');
+            $table->string('vci');
+            $table->string('tp_transaction');
+            $table->date('tpago');
+            $table->date('hora_pago');
+      */
+
+      //dd($result);
 
       //traer los datos del carro $result->buyOrder
 
