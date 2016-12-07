@@ -16,7 +16,7 @@ Route::get('config', 'ConfigController@index');
 
 
 
-Route::get('webpaynormal', 'WebpayController@index');
+//Route::get('webpaynormal', 'WebpayController@index');
 
 Route::post('getResult', 'WebpayController@getResult');
 

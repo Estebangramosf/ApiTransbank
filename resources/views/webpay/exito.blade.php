@@ -5,13 +5,12 @@
 
   <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
   <!-- Latest compiled and minified CSS -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-  <!-- Optional theme -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script
+    src="https://code.jquery.com/jquery-1.12.4.js"
+    integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+    crossorigin="anonymous"></script>
   <style>
     html, body {
       height: 100%;
@@ -49,12 +48,38 @@
 <body>
 <div class="container">
   <div class="content">
-    <div class="title">ApiTransbank</div>
+    <div class="title">Transacción exitosa{{--ApiTransbank--}}</div>
 
     <div class="sub-title">
-      Transacción exitosa.<br>
-      <a href="http://ecorpbancadesa.celmedia.cl/" class="btn btn-primary">Volver</a>
+      .<br>
+      <span id="reddirect"></span>
+      <form id="form1" name="form1" method="get" action="http://ecorpbancadesa.celmedia.cl/">
+      </form>
+      
+      {{-- <a href="http://ecorpbancadesa.celmedia.cl/" class="btn btn-primary">Volver</a> --}}
 
+      <script>
+        $(function () {
+
+          var timeReddirect = 3000;
+
+          setInterval(function(){
+            console.log('Redireccionando en => '+(timeReddirect/1000));
+            $('#reddirect').text('Redireccionando en '+(timeReddirect/1000));
+            timeReddirect -= 1000;
+            if(timeReddirect==0){reddirect();}
+            return true;
+          }, 1000);
+
+
+
+          function reddirect(){
+            timeReddirect = 3000;
+            document.form1.submit();
+          }
+
+        });
+      </script>
 
     </div>
   </div>

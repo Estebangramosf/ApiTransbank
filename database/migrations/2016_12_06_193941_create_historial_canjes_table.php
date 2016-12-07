@@ -21,6 +21,7 @@ class CreateHistorialCanjesTable extends Migration
             $table->string('saldo_final');
             $table->string('puntos');
             $table->string('ordenCompraCarrito');
+            $table->string('estado');
             $table->timestamps();
         });
     }

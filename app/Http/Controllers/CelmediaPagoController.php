@@ -128,12 +128,16 @@ class CelmediaPagoController extends Controller
         //Se crea el objeto $userResult como resultado de la verificación del usuario
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
+
         $request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
-        if( $userResult->pts >= $request->TBK_MONTO && !empty($request->TBK_RUT) ){
+
+
+        if( $userResult->pts >= $request->TBK_MONTO){
+        //if( false){
           //En esta parte se debiese hacer el canje normal sin webpay_transbank
 
 
-          //return view('webpay.exito');
+
 
           /*
           echo "Los puntos le alcanzan . <br>".
@@ -144,45 +148,59 @@ class CelmediaPagoController extends Controller
 
           //Se traen los datos del canje, la respuesta del canje
 
-          $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+          //$historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
 
-          if(isset($historial[0])){
-            return "Ya existe una transacción con esta orden de compra";
-            $historial = json_decode(json_encode($historial[0]));
-          }
+
+
+          //if(isset($historial[0])){
+
+
 
           //Se genera el canje y solicitud de canje
           $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
 
 
+          $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+          if(count($historial)>0){
+
+            $historial = json_decode(json_encode($historial[0]));
+            return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
+
+          }
+
           $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-          //Aqui debo retornar estos valores a la vista que me generará el post
-          $historial = json_decode(json_encode($historial[0]));
-          return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
-          //dd($historial);
+
+          //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
+          if(count($historial)==0){
+            return view('webpay.canjePendiente');
+          }
+
 
 
         }else{
+
+          //return view('webpay.exito');
           //return view('webpay.celmediaPago');
 
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
           //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
-
           /*
-          echo "Los puntos no le alcanzan . <br>".
+          return "Los puntos no le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($total = ($userResult->pts - $request->TBK_MONTO)).'<br>'.
             'Se debe generar el pago mediante transbank por los puntos restantes. <br>'.
             'Total en Pesos a Pagar con Transbank : $'.$total*-3;
           */
 
-
           $total = ($userResult->pts - $request->TBK_MONTO);
 
-          dd($this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION));
+          $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+
+          return view('webpay.index', ['result'=>$result]);
 
           //$this->generateSwap();
-          return true;
+
 
         }
 
@@ -311,9 +329,10 @@ class CelmediaPagoController extends Controller
           $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
 
           if($Result->RC == '227'){
-            return false;
-          }
 
+            return view('webpay.canjePendiente');
+
+          }
 
           if(count(HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get())==0){
             HistorialCanje::create([
@@ -324,6 +343,7 @@ class CelmediaPagoController extends Controller
               'saldo_final'=>$Result->saldo_final,
               'puntos'=>$Result->puntos,
               'ordenCompraCarrito'=>$ordenCompraCarrito,
+              'estado'=>'encanje',
             ])->save();
             return true;
           }else{

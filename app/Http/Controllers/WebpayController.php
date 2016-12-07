@@ -26,7 +26,7 @@ class WebpayController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($amount,$buyOrder,$sessionId)
+    public function index($a,$bO,$sId)
     {
         $wp_config = new configuration();
         $wp_certificate = $this->cert_normal();
@@ -40,21 +40,34 @@ class WebpayController extends Controller
         $wp = new webpay($wp_config);
 
         /** Monto de la transacción */
-        $a = $amount; //9990;
+        //$amount = 9990;
+        $amount = $a;
 
         /** Orden de compra de la tienda */
-        $bO = $buyOrder; //rand();
+        //$buyOrder = rand();
+        $buyOrder = $bO;
 
         /** Código comercio de la tienda entregado por Transbank */
-        $sId = $sessionId;//uniqid();
+        //$sessionId = uniqid();
+        $sessionId = $sId;
 
         /** URL de retorno */
-        //$urlReturn = "http://dev.apitransbank.com/getResult";
-        $urlReturn = "http://192.168.1.192/getResult";
+        $urlReturn = "http://dev.apitransbank.com/getResult";
+        //$urlReturn = "http://192.168.1.192/getResult";
 
         /** URL Final */
-        //$urlFinal  = "http://dev.apitransbank.com/end";
-        $urlFinal  = "http://192.168.1.192/end";
+        $urlFinal  = "http://dev.apitransbank.com/end";
+        //$urlFinal  = "http://192.168.1.192/end";
+
+      /*
+        dd([
+          'amount'=>$amount,
+          'butOrder'=>$buyOrder,
+          'sessionId'=>$sessionId,
+          'urlReturn'=>$urlReturn,
+          'urlFinal'=>$urlFinal
+        ]);
+      */
 
         $request = array(
           "amount"    => $amount,
@@ -67,7 +80,7 @@ class WebpayController extends Controller
         /** Iniciamos Transaccion */
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
 
-        return view('webpay.index', ['result'=>$result]);
+        return $result;
     }
 
 
@@ -133,7 +146,7 @@ class WebpayController extends Controller
 
       $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
-        return view('webpay.exito');
+      return view('webpay.exito');
 
       dd($result);
 
