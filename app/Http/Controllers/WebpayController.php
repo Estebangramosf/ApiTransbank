@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\HistorialCanje;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -146,11 +147,29 @@ class WebpayController extends Controller
 
       $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
+      //traer los datos del carro $result->buyOrder
 
 
-      return view('webpay.exito');
 
-      dd($result);
+
+      $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$result->buyOrder)->get();
+
+
+
+      if(count($historial)>0){
+
+        $historial = json_decode(json_encode($historial[0]));
+
+        return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
+
+      }
+
+      $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+      //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
+      if(count($historial)==0){
+        return view('webpay.canjePendiente');
+      }
 
 
 

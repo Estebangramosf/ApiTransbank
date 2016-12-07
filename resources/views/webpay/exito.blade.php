@@ -51,9 +51,9 @@
     <div class="title">Transacción exitosa{{--ApiTransbank--}}</div>
 
     <div class="sub-title">
-      .<br>
+      <span id="wait">Espere por favor . </span><br>
       <span id="reddirect"></span>
-      <form id="form1" name="form1" method="get" action="http://ecorpbancadesa.celmedia.cl/">
+      <form id="form1" name="form1" method="post" action="http://ecorpbancadesa.celmedia.cl/">
       </form>
       
       {{-- <a href="http://ecorpbancadesa.celmedia.cl/" class="btn btn-primary">Volver</a> --}}
@@ -66,6 +66,7 @@
           setInterval(function(){
             console.log('Redireccionando en => '+(timeReddirect/1000));
             $('#reddirect').text('Redireccionando en '+(timeReddirect/1000));
+            $('#wait').text() +' .';
             timeReddirect -= 1000;
             if(timeReddirect==0){reddirect();}
             return true;

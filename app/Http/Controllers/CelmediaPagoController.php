@@ -198,15 +198,16 @@ class CelmediaPagoController extends Controller
           $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
 
           $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
+          $result = '';
           if(count($historial)>0){
 
-            $historial = json_decode(json_encode($historial[0]));
-            return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
+            $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+
 
           }
 
           $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
 
           //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
           if(count($historial)==0){
@@ -214,12 +215,7 @@ class CelmediaPagoController extends Controller
           }
 
 
-          $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
-
           return view('webpay.index', ['result'=>$result]);
-
-
-
 
         }
 
@@ -346,7 +342,6 @@ class CelmediaPagoController extends Controller
 
 
           $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
-
           if($Result->RC == '227'){
 
             return view('webpay.canjePendiente');
@@ -361,7 +356,7 @@ class CelmediaPagoController extends Controller
               'id_transaccion'=>$Result->id_transaccion,
               'saldo_final'=>$Result->saldo_final,
               'puntos'=>$Result->puntos,
-              'copago'=>$Result->copago,
+              'copago'=>$data['copago'],
               'ordenCompraCarrito'=>$ordenCompraCarrito,
               'estado'=>'encanje',
             ])->save();
