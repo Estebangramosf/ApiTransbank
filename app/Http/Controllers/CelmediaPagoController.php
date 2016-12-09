@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use DateTime;
 use Illuminate\Console\Parser;
 use Illuminate\Http\Request;
 
@@ -28,17 +29,18 @@ class CelmediaPagoController extends Controller
     public function getShoppingCart(Request $request){
       try{
 
-        dd($request);
 
-        $tbk_id_session=date("YmdHms").rand(1,999).uniqid();
+        //"TBK_ORDEN_COMPRA" => "140"
+        //"TBK_ID_SESION" => "140"
+
+        /*
+        $request->TBK_ID_SESION=date("YmdHms").rand(1,999).uniqid();
 
         $fechhora=date("Y-m-d")."".date("H:i:s");
-        $fechhora2=date("Y-m-d")." ".date("H:i:s");
-        $fechcm=date("Y-m-d");
-        $festamp = new DateTime("$fechhora");
+        $festamp = new DateTime($fechhora);
         $fechadat=$festamp->getTimestamp();
-        $tbk_ord_compra = $fechadat;
-
+        $request->TBK_ORDEN_COMPRA = $fechadat;
+        */
 
 
         //Se crea el objeto $userResult como resultado de la verificación del usuario
