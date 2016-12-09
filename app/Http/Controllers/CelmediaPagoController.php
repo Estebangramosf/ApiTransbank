@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use Exception;
 use Illuminate\Console\Parser;
 use Illuminate\Http\Request;
 
@@ -30,13 +31,13 @@ class CelmediaPagoController extends Controller
 
         //Se crea el objeto $userResult como resultado de la verificación del usuario
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
-
         //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
         $request->TBK_MONTO=round($request->TBK_MONTO,0);
 
 
 
-        if( $userResult->pts >= $request->TBK_MONTO){
+        if($userResult->pts >= $request->TBK_MONTO){
+
           /*
           echo "Los puntos le alcanzan . <br>".
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
@@ -84,10 +85,11 @@ class CelmediaPagoController extends Controller
             'Total en Pesos a Pagar con Transbank : $'.$total*-3;
           */
 
+
           $total = ($userResult->pts - $request->TBK_MONTO);
 
-
-          $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
+          dd($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA);
+          $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA);
 
           $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
           $result = '';
@@ -113,7 +115,7 @@ class CelmediaPagoController extends Controller
 
 
       }catch(Exception $e){
-
+        dd($e);
       }
 
 
