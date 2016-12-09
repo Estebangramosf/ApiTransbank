@@ -108,7 +108,7 @@
             $('#progressBar').attr('style','width:'+width+'%;');
 
 
-          },8);
+          },10);
 
           function reddirect(){
             timeReddirect = 5000;
