@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\HistorialCanje;
 use App\WebpayPago;
+use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
+use Exception;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -24,6 +26,7 @@ class WebpayController extends Controller
 
     public function index($a,$bO,$sId)
     {
+      try{
         $wp_config = new configuration();
         $wp_certificate = $this->cert_normal();
 
@@ -75,6 +78,7 @@ class WebpayController extends Controller
         //dd($result);
 
         return $result;
+      }catch(Exception $e){}
     }
 
     public function getResult(Request $request){
@@ -193,10 +197,47 @@ class WebpayController extends Controller
             return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
           }
         }else{
-          return view('webpay.end');
+          try{
+            $historial = HistorialCanje::select('user_rut')->where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+            $historial = $historial[0];
+            $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
+
+
+            return view('webpay.end');
+          }catch(Exception $e){}
+
         }
       }catch(Exception $e){}
 
+    }
+
+    public function CambioEstadoPorAnulacionWSCLOTPC($user_rut){
+      try {
+        //Se instancia un nuevo comunicador de webservice con SoapWrapper
+        SoapWrapper::add(function ($service) {
+          $service
+            ->name('currency')
+            ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop_desa/wscl/wsclotpc_server_ps.php?wsdl')
+            ->trace(true);
+        });
+        //Se definen los parametros que consume el webservice
+        $data = [
+          'usuario'=>'celmediapago',
+          'password'=>'0x552A6798E1F1BCF715EFDB1E1DDC0874',
+          'idproveedor'=>'9',
+          'rut'=>$user_rut,
+        ];
+
+
+        // Se usa el nuevo webservice creado
+        SoapWrapper::service('currency', function ($service) use ($data) {
+            $service->call('CambioEstadoPorAnulacionWSCLOTPC', [$data]);
+            return true;
+        });
+
+      } catch(Exception $e) {
+
+      }
     }
 
 
