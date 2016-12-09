@@ -71,6 +71,7 @@ class WebpayController extends Controller
 
         //Guardamos el token para despues actualizar con el resto de la información
         $WebpayPago = new WebpayPago();
+        $WebpayPago->pago_id = $bO;
         $WebpayPago->token_ws = $result->token;
         $WebpayPago->estado_transaccion = 'initTransaction';
         $WebpayPago->save();

@@ -28,6 +28,19 @@ class CelmediaPagoController extends Controller
     public function getShoppingCart(Request $request){
       try{
 
+        dd($request);
+
+        $tbk_id_session=date("YmdHms").rand(1,999).uniqid();
+
+        $fechhora=date("Y-m-d")."".date("H:i:s");
+        $fechhora2=date("Y-m-d")." ".date("H:i:s");
+        $fechcm=date("Y-m-d");
+        $festamp = new DateTime("$fechhora");
+        $fechadat=$festamp->getTimestamp();
+        $tbk_ord_compra = $fechadat;
+
+
+
         //Se crea el objeto $userResult como resultado de la verificación del usuario
         $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
