@@ -77,13 +77,15 @@
       <script>
         $(function () {
 
+          var timeVisualReddirect = 5000;
           var timeReddirect = 3000;
 
           setInterval(function(){
-            console.log('Redireccionando en => '+(timeReddirect/1000));
-            $('#reddirect').text('Redireccionando en '+(timeReddirect/1000));
+            console.log('Redireccionando dentro de => '+(timeVisualReddirect/1000));
+            $('#reddirect').text('Redireccionando dentro de '+(timeVisualReddirect/1000));
             var wait = $('#wait').text() +' .';
             $('#wait').text(wait);
+            timeVisualReddirect -= 1000;
             timeReddirect -= 1000;
             if(timeReddirect==0){reddirect();}
             return true;
@@ -101,7 +103,7 @@
           function reddirect(){
             timeReddirect = 3000;
             console.log('Redireccionando');
-            document.form1.submit();
+            return document.form1.submit();
           }
 
         });

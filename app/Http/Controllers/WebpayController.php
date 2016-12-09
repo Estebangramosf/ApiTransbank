@@ -69,6 +69,7 @@ class WebpayController extends Controller
         //Guardamos el token para despues actualizar con el resto de la información
         $WebpayPago = new WebpayPago();
         $WebpayPago->token_ws = $result->token;
+        $WebpayPago->estado_transaccion = 'initTransaction';
         $WebpayPago->save();
 
         //dd($result);
@@ -77,137 +78,125 @@ class WebpayController extends Controller
     }
 
     public function getResult(Request $request){
+      try{
 
+        $wp_config = new configuration();
+        $wp_certificate = $this->cert_normal();
+        $wp = new webpay($wp_config);
 
+        $wp_config->setEnvironment($wp_certificate['environment']);
+        $wp_config->setCommerceCode($wp_certificate['commerce_code']);
+        $wp_config->setPrivateKey($wp_certificate['private_key']);
+        $wp_config->setPublicCert($wp_certificate['public_cert']);
+        $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
 
+        $wp = new webpay($wp_config);
 
+        $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
-      $wp_config = new configuration();
-      $wp_certificate = $this->cert_normal();
-      $wp = new webpay($wp_config);
+        $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
 
-      $wp_config->setEnvironment($wp_certificate['environment']);
-      $wp_config->setCommerceCode($wp_certificate['commerce_code']);
-      $wp_config->setPrivateKey($wp_certificate['private_key']);
-      $wp_config->setPublicCert($wp_certificate['public_cert']);
-      $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
+        $WebpayPago = $WebpayPago[0];
 
-      $wp = new webpay($wp_config);
+        $WebpayPago->accounting_date = $result->accountingDate;
+        $WebpayPago->ord_compra = $result->buyOrder;
+        $WebpayPago->id_sesion = $result->sessionId;
+        $WebpayPago->card_number = $result->cardDetail->cardNumber;
+        $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
+        $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
+        $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
+        $WebpayPago->response_code = $result->detailOutput->responseCode;
+        $WebpayPago->monto_dinero = $result->detailOutput->amount;
+        $WebpayPago->commerce_code = $result->detailOutput->commerceCode;
+        $WebpayPago->transaction_date = $result->transactionDate;
+        $WebpayPago->vci = $result->VCI;
+        $WebpayPago->estado_transaccion = 'getTransactionResult';
 
-      $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+        $WebpayPago->save();
 
-      $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
+        /*
 
-      $WebpayPago = $WebpayPago[0];
-
-      $WebpayPago->accounting_date = $result->accountingDate;
-      $WebpayPago->ord_compra = $result->buyOrder;
-      $WebpayPago->id_sesion = $result->sessionId;
-      $WebpayPago->card_number = $result->cardDetail->cardNumber;
-      $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
-      $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
-      $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
-      $WebpayPago->response_code = $result->detailOutput->responseCode;
-      $WebpayPago->monto_dinero = $result->detailOutput->amount;
-      $WebpayPago->commerce_code = $result->detailOutput->commerceCode;
-      $WebpayPago->transaction_date = $result->transactionDate;
-      $WebpayPago->vci = $result->VCI;
-
-
-
-      $WebpayPago->save();
-
-      /*
-
-            transactionResultOutput {#163 ▼                                                       OK--
-              +accountingDate: "1207"                                                             OK
-              +buyOrder: "108"                                                                    OK
-              +cardDetail: cardDetail {#169 ▼                                                     OK--
-                +cardNumber: "6623"                                                               OK
-                +cardExpirationDate: null                                                         OK
+              transactionResultOutput {#163 ▼                                                       OK--
+                +accountingDate: "1207"                                                             OK
+                +buyOrder: "108"                                                                    OK
+                +cardDetail: cardDetail {#169 ▼                                                     OK--
+                  +cardNumber: "6623"                                                               OK
+                  +cardExpirationDate: null                                                         OK
+                }
+                +detailOutput: wsTransactionDetailOutput {#165 ▼
+                  +authorizationCode: "1213"                                                        OK
+                  +paymentTypeCode: "VN"                                                            OK
+                  +responseCode: 0                                                                  OK
+                  +sharesAmount: null
+                  +sharesNumber: 0
+                  +amount: "87978"                                                                  OK
+                  +commerceCode: "597020000541"                                                     OK
+                +buyOrder: "108"                                                                    OK
+                }
+                +sessionId: "108"                                                                   OK
+                +transactionDate: "2016-12-07T18:32:39.536-03:00"                                   OK
+                +urlRedirection: "https://webpay3gint.transbank.cl/filtroUnificado/voucher.cgi"     OK#Generico constante
+                +VCI: "TSY"                                                                         OK
               }
-              +detailOutput: wsTransactionDetailOutput {#165 ▼
-                +authorizationCode: "1213"                                                        OK
-                +paymentTypeCode: "VN"                                                            OK
-                +responseCode: 0                                                                  OK
-                +sharesAmount: null
-                +sharesNumber: 0
-                +amount: "87978"                                                                  OK
-                +commerceCode: "597020000541"                                                     OK
-              +buyOrder: "108"                                                                    OK
-              }
-              +sessionId: "108"                                                                   OK
-              +transactionDate: "2016-12-07T18:32:39.536-03:00"                                   OK
-              +urlRedirection: "https://webpay3gint.transbank.cl/filtroUnificado/voucher.cgi"     OK#Generico constante
-              +VCI: "TSY"                                                                         OK
-            }
 
-            $table->increments('id');
-            $table->integer('pago_id');
-            $table->integer('monto_puntos');
-            $table->integer('monto_dinero');            OK
-            $table->integer('diferencia');
-            $table->integer('estado_pago');
-            $table->string('ord_compra');               OK
-            $table->string('id_sesion');                OK
-            $table->date('fh_transaccion');
-            $table->string('token_ws');                 OK
-            $table->string('accounting_date');          OK
-            $table->string('card_detail');
-            $table->string('card_number');              OK
-            $table->string('card_expiration_date');     OK
-            $table->string('authorization_code');       OK
-            $table->string('payment_type_code');        OK
-            $table->string('response_code');            OK
-            $table->string('commerce_code');            OK
-            $table->string('transaction_date');
-            $table->string('vci');
-            $table->string('tp_transaction');
-            $table->date('tpago');
-            $table->date('hora_pago');
-      */
+              $table->increments('id');
+              $table->integer('pago_id');
+              $table->integer('monto_puntos');
+              $table->integer('monto_dinero');            OK
+              $table->integer('diferencia');
+              $table->integer('estado_pago');
+              $table->string('ord_compra');               OK
+              $table->string('id_sesion');                OK
+              $table->date('fh_transaccion');
+              $table->string('token_ws');                 OK
+              $table->string('accounting_date');          OK
+              $table->string('card_detail');
+              $table->string('card_number');              OK
+              $table->string('card_expiration_date');     OK
+              $table->string('authorization_code');       OK
+              $table->string('payment_type_code');        OK
+              $table->string('response_code');            OK
+              $table->string('commerce_code');            OK
+              $table->string('transaction_date');
+              $table->string('vci');
+              $table->string('tp_transaction');
+              $table->date('tpago');
+              $table->date('hora_pago');
+        */
 
-      //traer los datos del carro $result->buyOrder
+        //traer los datos del carro $result->buyOrder
 
-      $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$result->buyOrder)->get();
+        $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$result->buyOrder)->get();
 
+        if(count($historial)==1){
+          return view('webpay.voucher', ['urlRedirection'=>$result->urlRedirection,'token'=>$request->token_ws]);
 
-      return view('webpay.voucher', ['urlRedirection'=>$result->urlRedirection,'token'=>$request->token_ws]);
+        }else{
+          return view('webpay.canjePendiente');
+        }
+      }catch(Exception $e){}
 
-      if(count($historial)==1){
-        $historial = json_decode(json_encode($historial[0]));
-        return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
-      }else{
-        return view('webpay.canjePendiente');
-      }
-
-      $historial = HistorialCanje::where('ordenCompraCarrito',$result->buyOrder)->get();
-
-      //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
-      if(count($historial)==0){
-        return view('webpay.canjePendiente');
-      }
-
-
-
-      dd($request->all());
-      /*
-      foreach($request as $item){
-        echo '<pre>'; print_r($item->parameters); echo '</pre>';
-      }
-      */
     }
 
 
 
     public function end(Request $request){
-        return view('webpay.end');
-      dd($request->all());
-      /*
-      foreach($request as $item){
-        echo '<pre>'; print_r($item->parameters); echo '</pre>';
-      }
-      */
+      try{
+        //cuando solo viene el token, la transaccion se aprobó o se rechazo por parte de transbank
+        //dd(count($request->all()));
+        if(count($request->all())==1){
+          $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
+          $WebpayPago = $WebpayPago[0];
+          if($WebpayPago->estado_transaccion == 'getTransactionResult'){
+            $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$WebpayPago->ord_compra)->get();
+            $historial = json_decode(json_encode($historial[0]));
+            return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
+          }
+        }else{
+          return view('webpay.end');
+        }
+      }catch(Exception $e){}
+
     }
 
 

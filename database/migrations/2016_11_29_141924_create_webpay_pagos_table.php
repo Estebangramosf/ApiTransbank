@@ -36,7 +36,7 @@ class CreateWebpayPagosTable extends Migration
             $table->string('tp_transaction');
             $table->date('tpago');
             $table->date('hora_pago');
-
+            $table->string('estado_transaccion');
             $table->timestamps();
         });
     }

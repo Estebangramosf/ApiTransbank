@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
-use Exception;
 use Illuminate\Console\Parser;
 use Illuminate\Http\Request;
 
@@ -43,7 +42,12 @@ class CelmediaPagoController extends Controller
             'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
             'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
           */
+          //Se traen los datos del canje, la respuesta del canje
+          //$historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+          //if(isset($historial[0])){
 
+
+          //Se genera el canje y solicitud de canje
           $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
 
 
@@ -63,7 +67,12 @@ class CelmediaPagoController extends Controller
             return view('webpay.canjePendiente');
           }
 
+
+
         }else{
+
+          //return view('webpay.exito');
+          //return view('webpay.celmediaPago');
 
           //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
           //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
@@ -83,18 +92,25 @@ class CelmediaPagoController extends Controller
           $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
           $result = '';
           if(count($historial)>0){
+
             $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+
+
           }
 
           $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+
           //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
           if(count($historial)==0){
             return view('webpay.canjePendiente');
           }
 
+
           return view('webpay.index', ['result'=>$result]);
 
         }
+
 
       }catch(Exception $e){
 
@@ -239,7 +255,6 @@ class CelmediaPagoController extends Controller
             return true;
           }else{
             return true;
-
             /*
             if(isset($historial[0])){
               $historial = json_decode(json_encode($historial[0]));
