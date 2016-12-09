@@ -79,6 +79,9 @@ class WebpayController extends Controller
     public function getResult(Request $request){
 
 
+
+
+
       $wp_config = new configuration();
       $wp_certificate = $this->cert_normal();
       $wp = new webpay($wp_config);
@@ -93,18 +96,22 @@ class WebpayController extends Controller
 
       $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
-      dd($result);
-
       $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
+
       $WebpayPago = $WebpayPago[0];
+
       $WebpayPago->accounting_date = $result->accountingDate;
       $WebpayPago->ord_compra = $result->buyOrder;
+      $WebpayPago->id_sesion = $result->sessionId;
       $WebpayPago->card_number = $result->cardDetail->cardNumber;
       $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
       $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
       $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
       $WebpayPago->response_code = $result->detailOutput->responseCode;
       $WebpayPago->monto_dinero = $result->detailOutput->amount;
+      $WebpayPago->commerce_code = $result->detailOutput->commerceCode;
+      $WebpayPago->transaction_date = $result->transactionDate;
+      $WebpayPago->vci = $result->VCI;
 
 
 
@@ -112,46 +119,47 @@ class WebpayController extends Controller
 
       /*
 
-            transactionResultOutput {#163 ▼
-              +accountingDate: "1207"
-              +buyOrder: "108"
-              +cardDetail: cardDetail {#169 ▼
-                +cardNumber: "6623"
-                +cardExpirationDate: null
+            transactionResultOutput {#163 ▼                                                       OK--
+              +accountingDate: "1207"                                                             OK
+              +buyOrder: "108"                                                                    OK
+              +cardDetail: cardDetail {#169 ▼                                                     OK--
+                +cardNumber: "6623"                                                               OK
+                +cardExpirationDate: null                                                         OK
               }
               +detailOutput: wsTransactionDetailOutput {#165 ▼
-                +authorizationCode: "1213"
-                +paymentTypeCode: "VN"
-                +responseCode: 0
+                +authorizationCode: "1213"                                                        OK
+                +paymentTypeCode: "VN"                                                            OK
+                +responseCode: 0                                                                  OK
                 +sharesAmount: null
                 +sharesNumber: 0
-                +amount: "87978"
-                +commerceCode: "597020000541"
-                +buyOrder: "108"
+                +amount: "87978"                                                                  OK
+                +commerceCode: "597020000541"                                                     OK
+              +buyOrder: "108"                                                                    OK
               }
-              +sessionId: "108"
-              +transactionDate: "2016-12-07T18:32:39.536-03:00"
-              +urlRedirection: "https://webpay3gint.transbank.cl/filtroUnificado/voucher.cgi"
-              +VCI: "TSY"
+              +sessionId: "108"                                                                   OK
+              +transactionDate: "2016-12-07T18:32:39.536-03:00"                                   OK
+              +urlRedirection: "https://webpay3gint.transbank.cl/filtroUnificado/voucher.cgi"     OK#Generico constante
+              +VCI: "TSY"                                                                         OK
             }
 
             $table->increments('id');
             $table->integer('pago_id');
             $table->integer('monto_puntos');
-            $table->integer('monto_dinero');
+            $table->integer('monto_dinero');            OK
             $table->integer('diferencia');
             $table->integer('estado_pago');
-            $table->string('ord_compra');
-            $table->string('id_sesion');
+            $table->string('ord_compra');               OK
+            $table->string('id_sesion');                OK
             $table->date('fh_transaccion');
-            $table->string('token_ws');
-            $table->string('accounting_date');
+            $table->string('token_ws');                 OK
+            $table->string('accounting_date');          OK
             $table->string('card_detail');
-            $table->string('card_number');
-            $table->string('card_expiration_date');
-            $table->string('authorization_code');
-            $table->string('payment_type_code');
-            $table->string('response_code');
+            $table->string('card_number');              OK
+            $table->string('card_expiration_date');     OK
+            $table->string('authorization_code');       OK
+            $table->string('payment_type_code');        OK
+            $table->string('response_code');            OK
+            $table->string('commerce_code');            OK
             $table->string('transaction_date');
             $table->string('vci');
             $table->string('tp_transaction');
@@ -159,11 +167,12 @@ class WebpayController extends Controller
             $table->date('hora_pago');
       */
 
-      //dd($result);
-
       //traer los datos del carro $result->buyOrder
 
       $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$result->buyOrder)->get();
+
+
+      return view('webpay.voucher', ['urlRedirection'=>$result->urlRedirection,'token'=>$request->token_ws]);
 
       if(count($historial)==1){
         $historial = json_decode(json_encode($historial[0]));

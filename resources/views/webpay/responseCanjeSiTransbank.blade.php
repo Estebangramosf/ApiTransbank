@@ -52,10 +52,17 @@
 
     <div class="sub-title">
       <span id="wait">Espere por favor . </span><br>
+
+      <div class="progress">
+        <div id="progressBar" class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+          <span class="sr-only">Espere por favor...</span>
+        </div>
+      </div>
+
       <span id="reddirect"></span>
 
       <form id="form1" name="form1" method="post" action="http://ecorpbancadesa.celmedia.cl/module/celmediapago/validation" autocomplete="off"  onSubmit="">
-        <p>Tu clave ha sido enviada exit&oacute;samente</p>
+
         <input type="hidden" name="CELPAGO_TBK_OC" value="{{$historial->ordenCompraCarrito}}">
         <input type="hidden" name="CELPAGO_TBK_MONTO" value="{{$historial->copago}}">
         <input type="hidden" name="CELPAGO_ID_CART" value="{{$historial->ordenCompraCarrito}}">
@@ -74,14 +81,25 @@
           setInterval(function(){
             console.log('Redireccionando en => '+(timeReddirect/1000));
             $('#reddirect').text('Redireccionando en '+(timeReddirect/1000));
-            $('#wait').text() +' .';
+            var wait = $('#wait').text() +' .';
+            $('#wait').text(wait);
             timeReddirect -= 1000;
             if(timeReddirect==0){reddirect();}
             return true;
           }, 1000);
 
+          var width = 0;
+          setInterval(function(){
+            width += 0.5;
+            console.log();
+            $('#progressBar').attr('style','width:'+width+'%;');
+
+
+          },10);
+
           function reddirect(){
             timeReddirect = 3000;
+            console.log('Redireccionando');
             document.form1.submit();
           }
 
