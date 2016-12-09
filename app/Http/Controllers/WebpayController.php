@@ -202,7 +202,6 @@ class WebpayController extends Controller
             $historial = $historial[0];
             $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
 
-
             return view('webpay.end');
           }catch(Exception $e){}
 
@@ -224,7 +223,6 @@ class WebpayController extends Controller
         $data = [
           'usuario'=>'celmediapago',
           'password'=>'0x552A6798E1F1BCF715EFDB1E1DDC0874',
-          'idproveedor'=>'9',
           'rut'=>$user_rut,
         ];
 
