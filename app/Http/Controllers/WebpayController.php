@@ -76,8 +76,6 @@ class WebpayController extends Controller
         $WebpayPago->estado_transaccion = 'initTransaction';
         $WebpayPago->save();
 
-        //dd($result);
-
         return $result;
       }catch(Exception $e){}
     }
@@ -99,34 +97,46 @@ class WebpayController extends Controller
 
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
 
-        $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
-
-        $WebpayPago = $WebpayPago[0];
-
         //Desde acá filtrar el response code
 
-        if($result->detailOutput->responseCode == '00') {
-
-          $WebpayPago->accounting_date = $result->accountingDate;
-          $WebpayPago->ord_compra = $result->buyOrder;
-          $WebpayPago->id_sesion = $result->sessionId;
-          $WebpayPago->fh_transaccion = date('Y-m-d H:i:s');
-          $WebpayPago->card_number = $result->cardDetail->cardNumber;
-          $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
-          $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
-          $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
-          $WebpayPago->response_code = $result->detailOutput->responseCode;
-          $WebpayPago->monto_dinero = $result->detailOutput->amount;
-          $WebpayPago->commerce_code = $result->detailOutput->commerceCode;
-          $WebpayPago->transaction_date = $result->transactionDate;
-          $WebpayPago->vci = $result->VCI;
-          $WebpayPago->tp_transaction = 'TR_NORMAL_WS';
-          $WebpayPago->tpago = date('Y-m-d H:i:s');
-          $WebpayPago->hora_pago = date('Y-m-d H:i:s');
-          $WebpayPago->estado_transaccion = 'getTransactionResult';
-
-          $WebpayPago->save();
-
+        switch($result->detailOutput->responseCode){
+          case '0':
+            //echo "Transacción Aprobada";
+            $this->saveTransactionResult($request->token_ws, $result, 'ApprovedTransaction');/*'getTransactionResult'*/
+            break;
+          case '-1':
+            //echo "Transacción Rechazada";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionDeclined');
+            break;
+          case '-2':
+            //echo "Transacción debe Reintentarse";
+            $this->saveTransactionResult($request->token_ws, $result, 'RetryTransaction');
+            break;
+          case '-3':
+            //echo "Error en Transacción";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionError');
+            break;
+          case '-4':
+            //echo "Rechazo de Transacción";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionRejected');
+            break;
+          case '-5':
+            //echo "Rechazo por error de Tasa";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionRejectedByErrorRate');
+            break;
+          case '-6':
+            //echo "Excede cupo máximo Mensual";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionExceedsMonthlyMaximumQuota');
+            break;
+          case '-7':
+            //echo "Excede límite diario por Transacción";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionExceedsDailyLimit');
+            break;
+          case '-8':
+            //echo "Rubro no Autorizado";
+            $this->saveTransactionResult($request->token_ws, $result, 'TransactionUnauthorizedItem');
+            break;
+        }
           /*
 
                 transactionResultOutput {#163 ▼                                                       OK--
@@ -176,48 +186,83 @@ class WebpayController extends Controller
                 $table->date('tpago');                      OK
                 $table->date('hora_pago');                  OK
         */
-
           //traer los datos del carro $result->buyOrder
-
           $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $result->buyOrder)->get();
-
           if (count($historial) == 1) {
             return view('webpay.voucher', ['urlRedirection' => $result->urlRedirection, 'token' => $request->token_ws]);
-
           } else {
             return view('webpay.canjePendiente');
           }
-        }
       }catch(Exception $e){}
 
     }
 
+    public function saveTransactionResult($token_ws, $result, $transactionStatus){
+      try{
 
+        $WebpayPago = WebpayPago::where('token_ws', $token_ws)->get();
+        $WebpayPago = $WebpayPago[0];
+
+        $WebpayPago->accounting_date = $result->accountingDate;
+        $WebpayPago->ord_compra = $result->buyOrder;
+        $WebpayPago->id_sesion = $result->sessionId;
+        $WebpayPago->fh_transaccion = date('Y-m-d H:i:s');
+        $WebpayPago->card_number = $result->cardDetail->cardNumber;
+        $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
+        $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
+        $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
+        $WebpayPago->response_code = $result->detailOutput->responseCode;
+        $WebpayPago->monto_dinero = $result->detailOutput->amount;
+        $WebpayPago->commerce_code = $result->detailOutput->commerceCode;
+        $WebpayPago->transaction_date = $result->transactionDate;
+        $WebpayPago->vci = $result->VCI;
+        $WebpayPago->tp_transaction = 'TR_NORMAL_WS';
+        $WebpayPago->tpago = date('Y-m-d H:i:s');
+        $WebpayPago->hora_pago = date('Y-m-d H:i:s');
+        $WebpayPago->estado_transaccion = $transactionStatus; //'getTransactionResult';
+
+        $WebpayPago->save();
+
+        return $WebpayPago;
+
+      }catch(Exception $e){}
+    }
 
     public function end(Request $request){
       try{
         //cuando solo viene el token, la transaccion se aprobó o se rechazo por parte de transbank
-        //dd(count($request->all()));
         if(count($request->all())==1){
           $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
           $WebpayPago = $WebpayPago[0];
-          if($WebpayPago->estado_transaccion == 'getTransactionResult'){
+
+          if($WebpayPago->estado_transaccion == 'ApprovedTransaction'){
             $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$WebpayPago->ord_compra)->get();
             $historial = json_decode(json_encode($historial[0]));
             return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
+          }else{
+            //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje
+            $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
+            //Cuando el estado no fue aprobado, lo redicrecciona a su vista correspondiente
+            return view('webpay.webpayResponseErrors.'.$WebpayPago->estado_transaccion);
           }
         }else{
-          try{
-            $historial = HistorialCanje::select('user_rut')->where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-            $historial = $historial[0];
-            $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
-
-            return view('webpay.end');
-          }catch(Exception $e){}
-
+          //Acá es cuando el cliente anula desde módulo de webpay transbank
+          $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+          return view('webpay.end');
         }
       }catch(Exception $e){}
+    }
 
+    public function procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA){
+      try{
+
+        $historial = HistorialCanje::select('user_rut')->where('estado','encanje')->where('ordenCompraCarrito',$TBK_ORDEN_COMPRA)->get();
+        $historial = $historial[0];
+        $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
+
+      }catch(Exception $e){
+
+      }
     }
 
     public function CambioEstadoPorAnulacionWSCLOTPC($user_rut){
