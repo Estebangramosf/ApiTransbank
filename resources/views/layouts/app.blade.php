@@ -205,6 +205,15 @@
               </div>
             </a>
           </li>
+          <li class="{!! Request::path()=="payments"?'active':'' !!}">
+            <a href="{!! url('/payments') !!}"><i class="fa fa-fw fa-dashboard"></i>
+              <div align="center">
+                <img class="out-dashboard-item" style="float:left;"
+                     src="{!! asset('img/glyphicons/glyphicons/png/glyphicons-618-small-payments.png') !!}" alt="">
+                Pagos
+              </div>
+            </a>
+          </li>
           {{--
 
           <li class="{!! Request::path()=="item2"?'active':'' !!}">

@@ -18,6 +18,7 @@ Route::get('config', 'ConfigController@index');
 //Routes for statistics
 Route::get('users','ReportController@users');
 Route::get('transactions','ReportController@transactions');
+Route::get('payments','ReportController@payments');
 
 //Route::get('webpaynormal', 'WebpayController@index');
 
