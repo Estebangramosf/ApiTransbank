@@ -51,12 +51,12 @@ class WebpayController extends Controller
         $sessionId = $sId;
 
         /** URL de retorno */
-        $urlReturn = "http://dev.apitransbank.com/getResult";
-        //$urlReturn = "http://192.168.1.192/getResult";
+        //$urlReturn = "http://dev.apitransbank.com/getResult";
+        $urlReturn = "http://192.168.1.192/getResult";
 
         /** URL Final */
-        $urlFinal  = "http://dev.apitransbank.com/end";
-        //$urlFinal  = "http://192.168.1.192/end";
+        //l$urlFinal  = "http://dev.apitransbank.com/end";
+        $urlFinal  = "http://192.168.1.192/end";
 
         $request = array(
           "amount"    => $amount,
