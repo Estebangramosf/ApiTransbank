@@ -31,6 +31,39 @@
   {!!Html::script('js/html5shiv.js')!!}
   {!!Html::script('js/respond.min.js')!!}
   <![endif]-->
+  <style>
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      display: table;
+      font-weight: 400;
+      font-family: 'Lato';
+    }
+
+    .container {
+      text-align: center;
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    .content {
+      text-align: center;
+      display: inline-block;
+    }
+
+    .title {
+      font-size: 96px;
+    }
+
+    .sub-title {
+      font-size: 26px;
+    }
+  </style>
 </head>
 
 <body>

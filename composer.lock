@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0c9ed1ed86682b672e6af423d0307d61",
-    "content-hash": "76bc68ef5251d70ae78f1e6092b87eee",
+    "hash": "fffa887c110b2a667787390b3040246b",
+    "content-hash": "e0949ab7cb77666b3cbd97b737a92691",
     "packages": [
         {
             "name": "artisaninweb/laravel-soap",
@@ -884,6 +884,79 @@
             "time": "2016-03-18 20:34:03"
         },
         {
+            "name": "prestashop/prestashop-webservice-lib",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PrestaShop/PrestaShop-webservice-lib.git",
+                "reference": "30f3e46104667f34398f8073ce0365515cc09e64"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PrestaShop/PrestaShop-webservice-lib/zipball/30f3e46104667f34398f8073ce0365515cc09e64",
+                "reference": "30f3e46104667f34398f8073ce0365515cc09e64",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">= 5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "PSWebServiceLibrary.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "OSL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "PrestaShop SA",
+                    "email": "contact@prestashop.com"
+                }
+            ],
+            "description": "PrestaShop Webservice access library",
+            "time": "2016-09-01 09:03:36"
+        },
+        {
+            "name": "protechstudio/laravel-prestashop-webservice",
+            "version": "2.4.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Silentscripter/laravel-prestashop-webservice.git",
+                "reference": "69ab8f1c2e3f42bf1d57f33b71cee9ab86f20f5b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Silentscripter/laravel-prestashop-webservice/zipball/69ab8f1c2e3f42bf1d57f33b71cee9ab86f20f5b",
+                "reference": "69ab8f1c2e3f42bf1d57f33b71cee9ab86f20f5b",
+                "shasum": ""
+            },
+            "require": {
+                "prestashop/prestashop-webservice-lib": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Protechstudio\\PrestashopWebService\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Vito Laera",
+                    "email": "vito.laera@protechstudio.it"
+                }
+            ],
+            "description": "Laravel 5 wrapper for Prestashop Web Service Library",
+            "time": "2016-07-12 16:19:12"
+        },
+        {
             "name": "psr/log",
             "version": "1.0.2",
             "source": {
@@ -1174,7 +1247,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v3.2.0",
+            "version": "v3.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
@@ -2552,16 +2625,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "4.8.30",
+            "version": "4.8.31",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "a534e04d0bd39c557c2881c341efd06fa6f1292a"
+                "reference": "98b2b39a520766bec663ff5b7ff1b729db9dbfe3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/a534e04d0bd39c557c2881c341efd06fa6f1292a",
-                "reference": "a534e04d0bd39c557c2881c341efd06fa6f1292a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/98b2b39a520766bec663ff5b7ff1b729db9dbfe3",
+                "reference": "98b2b39a520766bec663ff5b7ff1b729db9dbfe3",
                 "shasum": ""
             },
             "require": {
@@ -2620,7 +2693,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-12-01 17:05:48"
+            "time": "2016-12-09 02:45:31"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -3161,16 +3234,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.2.0",
+            "version": "v3.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "f2300ba8fbb002c028710b92e1906e7457410693"
+                "reference": "a7095af4b97a0955f85c8989106c249fa649011f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/f2300ba8fbb002c028710b92e1906e7457410693",
-                "reference": "f2300ba8fbb002c028710b92e1906e7457410693",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/a7095af4b97a0955f85c8989106c249fa649011f",
+                "reference": "a7095af4b97a0955f85c8989106c249fa649011f",
                 "shasum": ""
             },
             "require": {
@@ -3212,7 +3285,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-18 21:17:59"
+            "time": "2016-12-10 10:07:06"
         },
         {
             "name": "webmozart/assert",
@@ -3266,9 +3339,9 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": [],
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": ">=5.5.9"
