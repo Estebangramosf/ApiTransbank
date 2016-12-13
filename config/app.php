@@ -157,6 +157,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         'Artisaninweb\SoapWrapper\ServiceProvider',
+        Protechstudio\PrestashopWebService\PrestashopWebServiceProvider::class,
 
     ],
 
@@ -204,8 +205,8 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'SoapWrapper' => 'Artisaninweb\SoapWrapper\Facades\SoapWrapper',
-        'Html' => Collective\Html\HtmlFacade::class
-
+        'Html' => Collective\Html\HtmlFacade::class,
+        'Prestashop' => Protechstudio\PrestashopWebService\PrestashopWebServiceFacade::class,
     ],
 
 ];

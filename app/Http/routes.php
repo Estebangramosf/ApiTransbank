@@ -28,7 +28,8 @@ Route::post('end', 'WebpayController@end');
 
 Route::post('getShoppingCart','CelmediaPagoController@getShoppingCart');
 
-
+//Route for Prestashop WebServices
+Route::get('prestashop','PrestashopController@test');
 
 Route::get('/', function () {
     return view('welcome');
