@@ -4,6 +4,7 @@ namespace App\Libraries\libwebpay;
 
 use DOMDocument;
 use Exception;
+use Illuminate\Support\Facades\Redirect;
 use SoapClient;
 use SoapValidation;
 use WSSESoap;
@@ -276,6 +277,8 @@ class WebPayNormal {
             $xmlResponse = $this->soapClient->__getLastResponse();
             $soapValidation = new SoapValidation($xmlResponse, $this->config->getWebpayCert());
             $validationResult = $soapValidation->getValidationResult();
+
+
             /** Valida conexion a Webpay. Caso correcto retorna URL y Token */
             if ($validationResult === TRUE) {
 
@@ -293,8 +296,8 @@ class WebPayNormal {
             $replaceArray = array('<!--' => '', '-->' => '');
             $error["detail"] = str_replace(array_keys($replaceArray), array_values($replaceArray), $e->getMessage());
         }
-        return view('webpay.end', ['error' => $error]);
-        //return $error;
+
+        return $error;
     }
 
     /**

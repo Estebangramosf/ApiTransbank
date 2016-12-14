@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\HistorialCanje;
 use DateTime;
+use Exception;
 use Illuminate\Console\Parser;
 use Illuminate\Http\Request;
 
@@ -128,7 +129,8 @@ class CelmediaPagoController extends Controller
 
 
       }catch(Exception $e){
-
+        //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
+        return view('webpay.webpayResponseErrors.invalidWebpayCert');
       }
 
 
