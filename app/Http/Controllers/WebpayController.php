@@ -67,8 +67,9 @@ class WebpayController extends Controller
         );
 
         /** Iniciamos Transaccion */
+        //dd($request);
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
-
+        //dd($result);
         //Guardamos el token para despues actualizar con el resto de la información
         $WebpayPago = new WebpayPago();
         $WebpayPago->pago_id = $bO;
@@ -95,7 +96,27 @@ class WebpayController extends Controller
 
         $wp = new webpay($wp_config);
 
+        /*
+          "getTransactionResult" => "getTransactionResult"
+          "getTransactionResultResponse" => "getTransactionResultResponse"
+          "transactionResultOutput" => "transactionResultOutput"
+          "cardDetail" => "cardDetail"
+          "wsTransactionDetailOutput" => "wsTransactionDetailOutput"
+          "wsTransactionDetail" => "wsTransactionDetail"
+          "acknowledgeTransaction" => "acknowledgeTransaction"
+          "acknowledgeTransactionResponse" => "acknowledgeTransactionResponse"
+          "initTransaction" => "initTransaction"
+          "wsInitTransactionInput" => "wsInitTransactionInput"
+          "wpmDetailInput" => "wpmDetailInput"
+          "initTransactionResponse" => "initTransactionResponse"
+          "wsInitTransactionOutput" => "wsInitTransactionOutput"
+        */
+        //dd($request);
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+        //dd($result);
+
+        //dd($knowledge);
+
 
         //Desde acá filtrar el response code
 
@@ -301,7 +322,9 @@ class WebpayController extends Controller
           "environment" => "INTEGRACION",
 
             /** Llave Privada */
-          "private_key" => "-----BEGIN RSA PRIVATE KEY-----
+          "private_key" => "
+
+-----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEA0ClVcH8RC1u+KpCPUnzYSIcmyXI87REsBkQzaA1QJe4w/B7g
 6KvKV9DaqfnNhMvd9/ypmGf0RDQPhlBbGlzymKz1xh0lQBD+9MZrg8Ju8/d1k0pI
 b1QLQDnhRgR2T14ngXpP4PIQKtq7DsdHBybFU5vvAKVqdHvImZFzqexbZjXWxxhT
@@ -327,10 +350,15 @@ t/Duh6IFZxQQSQ6oN30MZRD6eo4X3dHp5eTaE0Fr8mAefAWQCoMw1q3m+ai1PlhM
 uFzX4r0CgYEArx4TAq+Z4crVCdABBzAZ7GvvAXdxvBo0AhD9IddSWVTCza972wta
 5J2rrS/ye9Tfu5j2IbTHaLDz14mwMXr1S4L39UX/NifLc93KHie/yjycCuu4uqNo
 MtdweTnQt73lN2cnYedRUhw9UTfPzYu7jdXCUAyAD4IEjFQrswk2x04=
------END RSA PRIVATE KEY-----",
+-----END RSA PRIVATE KEY-----
+
+
+",
 
             /** Certificado Publico */
-          "public_cert" => "-----BEGIN CERTIFICATE-----
+          "public_cert" => "
+
+-----BEGIN CERTIFICATE-----
 MIIDujCCAqICCQCZ42cY33KRTzANBgkqhkiG9w0BAQsFADCBnjELMAkGA1UEBhMC
 Q0wxETAPBgNVBAgMCFNhbnRpYWdvMRIwEAYDVQQKDAlUcmFuc2JhbmsxETAPBgNV
 BAcMCFNhbnRpYWdvMRUwEwYDVQQDDAw1OTcwMjAwMDA1NDExFzAVBgNVBAsMDkNh
@@ -351,10 +379,15 @@ Adps9DtgiN2ITSF1HUFmhMjI5V7U2L9LyEdpUaieYyPBfxiicdWz2YULVuOYDJHR
 n05jlj/EjYa5bLKs/yggYiqMkZdIX8NiLL6ZTERIvBa6azDKs6yDsCsnE1M5tzQI
 VVEkZtEfil6E1tz8v3yLZapLt+8jmPq1RCSx3Zh4fUkxBTpUW/9SWUNEXbKK7bB3
 zfB3kGE55K5nxHKfQlrqdHLcIo+vdShATwYnmhUkGxUnM9qoCDlB8lYu3rFi9w==
------END CERTIFICATE-----",
+-----END CERTIFICATE-----
+
+
+",
 
             /** Certificado Server */
-          "webpay_cert" => "-----BEGIN CERTIFICATE-----
+          "webpay_cert" => "
+
+-----BEGIN CERTIFICATE-----
 MIIDKTCCAhECBFZl7uIwDQYJKoZIhvcNAQEFBQAwWTELMAkGA1UEBhMCQ0wxDjAMBgNVBAgMBUNo
 aWxlMREwDwYDVQQHDAhTYW50aWFnbzEMMAoGA1UECgwDa2R1MQwwCgYDVQQLDANrZHUxCzAJBgNV
 BAMMAjEwMB4XDTE1MTIwNzIwNDEwNloXDTE4MDkwMjIwNDEwNlowWTELMAkGA1UEBhMCQ0wxDjAM
@@ -370,7 +403,10 @@ CpEvgcRIv/OeIi6Jbuu3NrPdGPwzYkzlOQnmgio5RGb6GSs+OQ0mUWZ9J1+YtdZc+xTga0x7nsCT
 5xNcUXsZKhyjoKhXtxJm3eyB3ysLNyuL/RHy/EyNEWiUhvt1SIePnW+Y4/cjQWYwNqSqMzTSW9TP
 2QR2bX/W2H6ktRcLsgBK9mq7lE36p3q6c9DtZJE+xfA4NGCYWM9hd8pbusnoNO7AFxJZOuuvLZI7
 JvD7YLhPvCYKry7N6x3l
------END CERTIFICATE-----",
+-----END CERTIFICATE-----
+
+
+",
 
             /** Codigo Comercio */
           "commerce_code" => "597020000541",

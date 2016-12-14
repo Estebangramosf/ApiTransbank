@@ -62,6 +62,10 @@
     <div class="title">Transacción Rechazada</div>
     <div class="sub-title">Estimado cliente, la transacción fue rechazada por Transbank, intente más tarde con otro medio de pago o pongase en contacto con su proveedor.</div>
 
+    <form id="form1" name="form1" method="" action="http://ecorpbancadesa.celmedia.cl/module/celmediapago/validation">
+      <input type="hidden" name="status_error" value="1">
+      <input type="hidden" name="message_error" value="Transacción Rechazada">
+    </form>
     @include('webpay.webpayPartial.scriptProgressBar')
 
   </div>

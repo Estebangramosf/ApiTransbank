@@ -331,6 +331,7 @@ class WebPayNormal {
                 $transactionResultOutput = $getTransactionResultResponse->return;
 
                 /** Indica a Webpay que se ha recibido conforme el resultado de la transacción */
+                //dd($this->acknowledgeTransaction($token));
                 if ($this->acknowledgeTransaction($token)) {
 
                     /** Validación de transacción aprobada */
@@ -339,7 +340,7 @@ class WebPayNormal {
                         return $transactionResultOutput;
                     } else {
                         $transactionResultOutput->detailOutput->responseDescription = $this->_getReason($resultCode);
-                        return $transactionResultOutput;
+                        return dd($transactionResultOutput);
                     }
                 } else {
 

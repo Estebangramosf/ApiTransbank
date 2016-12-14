@@ -21,7 +21,7 @@ class PrestashopController extends Controller
       //$opt['display'] = 'full';
       //$opt['id'] = 20;
 
-      $opt = array('resource' => 'orders', 'filter[id]' => 2, 'display' => 'full');
+      $opt = array('resource' => 'carts', 'filter[id]' => 152, 'display' => 'full');
 
 
       $xml = Prestashop::get($opt);

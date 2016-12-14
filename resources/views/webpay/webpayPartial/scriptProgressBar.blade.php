@@ -27,9 +27,8 @@ Y ahora todas las subvistas de la carpeta -> webpayResponseErrors
   </div>
 
   <span id="reddirect">Redireccionando en </span>
-  <form id="form1" name="form1" method="get" action="http://ecorpbancadesa.celmedia.cl/">
-  </form>
 
+  {{--El formulario va en cada vista ya que se envían parametros por post distintos en base al estado--}}
 
   <script>
     $(function () {
