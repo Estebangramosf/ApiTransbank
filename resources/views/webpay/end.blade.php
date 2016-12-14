@@ -58,7 +58,7 @@
 <body>
 <div class="container">
   <div class="content">
-    <div class="title">Transacción finalizada</div>
+    <div class="title">Transacción anulada por el usuario</div>
 
     <div class="sub-title">
       <span id="wait">Espere por favor . </span><br>
@@ -71,7 +71,7 @@
 
       <span id="reddirect">Redireccionando en </span>
       <form id="form1" name="form1" method="get" action="http://ecorpbancadesa.celmedia.cl/">
-
+        <!-- Verificar si aqui tengo que enviar algun parametro por posteo, verificar tambien la url -->
       </form>
 
 

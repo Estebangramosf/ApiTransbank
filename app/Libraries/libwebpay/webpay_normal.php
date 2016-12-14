@@ -340,7 +340,7 @@ class WebPayNormal {
                         return $transactionResultOutput;
                     } else {
                         $transactionResultOutput->detailOutput->responseDescription = $this->_getReason($resultCode);
-                        return dd($transactionResultOutput);
+                        return $transactionResultOutput;
                     }
                 } else {
 

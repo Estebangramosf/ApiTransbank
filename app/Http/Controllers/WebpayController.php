@@ -27,16 +27,8 @@ class WebpayController extends Controller
     public function index($a,$bO,$sId)
     {
       try{
-        $wp_config = new configuration();
-        $wp_certificate = $this->cert_normal();
 
-        $wp_config->setEnvironment($wp_certificate['environment']);
-        $wp_config->setCommerceCode($wp_certificate['commerce_code']);
-        $wp_config->setPrivateKey($wp_certificate['private_key']);
-        $wp_config->setPublicCert($wp_certificate['public_cert']);
-        $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
-
-        $wp = new webpay($wp_config);
+        $wp = $this->setParametersForTransbankTransactions();
 
         /** Monto de la transacción */
         //$amount = 9990;
@@ -81,36 +73,39 @@ class WebpayController extends Controller
       }catch(Exception $e){}
     }
 
+    public function setParametersForTransbankTransactions(){
+      $wp_config = new configuration();
+      $wp_certificate = $this->cert_normal();
+
+      $wp_config->setEnvironment($wp_certificate['environment']);
+      $wp_config->setCommerceCode($wp_certificate['commerce_code']);
+      $wp_config->setPrivateKey($wp_certificate['private_key']);
+      $wp_config->setPublicCert($wp_certificate['public_cert']);
+      $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
+
+      return new webpay($wp_config);
+    }
+
     public function getResult(Request $request){
       try{
 
-        $wp_config = new configuration();
-        $wp_certificate = $this->cert_normal();
-        $wp = new webpay($wp_config);
+        $wp = $this->setParametersForTransbankTransactions();
 
-        $wp_config->setEnvironment($wp_certificate['environment']);
-        $wp_config->setCommerceCode($wp_certificate['commerce_code']);
-        $wp_config->setPrivateKey($wp_certificate['private_key']);
-        $wp_config->setPublicCert($wp_certificate['public_cert']);
-        $wp_config->setWebpayCert($wp_certificate['webpay_cert']);
-
-        $wp = new webpay($wp_config);
-
-        /*
-          "getTransactionResult" => "getTransactionResult"
-          "getTransactionResultResponse" => "getTransactionResultResponse"
-          "transactionResultOutput" => "transactionResultOutput"
-          "cardDetail" => "cardDetail"
-          "wsTransactionDetailOutput" => "wsTransactionDetailOutput"
-          "wsTransactionDetail" => "wsTransactionDetail"
-          "acknowledgeTransaction" => "acknowledgeTransaction"
-          "acknowledgeTransactionResponse" => "acknowledgeTransactionResponse"
-          "initTransaction" => "initTransaction"
-          "wsInitTransactionInput" => "wsInitTransactionInput"
-          "wpmDetailInput" => "wpmDetailInput"
-          "initTransactionResponse" => "initTransactionResponse"
-          "wsInitTransactionOutput" => "wsInitTransactionOutput"
-        */
+           /*
+             "getTransactionResult" => "getTransactionResult"
+             "getTransactionResultResponse" => "getTransactionResultResponse"
+             "transactionResultOutput" => "transactionResultOutput"
+             "cardDetail" => "cardDetail"
+             "wsTransactionDetailOutput" => "wsTransactionDetailOutput"
+             "wsTransactionDetail" => "wsTransactionDetail"
+             "acknowledgeTransaction" => "acknowledgeTransaction"
+             "acknowledgeTransactionResponse" => "acknowledgeTransactionResponse"
+             "initTransaction" => "initTransaction"
+             "wsInitTransactionInput" => "wsInitTransactionInput"
+             "wpmDetailInput" => "wpmDetailInput"
+             "initTransactionResponse" => "initTransactionResponse"
+             "wsInitTransactionOutput" => "wsInitTransactionOutput"
+           */
         //dd($request);
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
         //dd($result);
@@ -251,27 +246,42 @@ class WebpayController extends Controller
 
     public function end(Request $request){
       try{
-        //cuando solo viene el token, la transaccion se aprobó o se rechazo por parte de transbank
-        if(count($request->all())==1){
-          $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
-          $WebpayPago = $WebpayPago[0];
+        $wp = $this->setParametersForTransbankTransactions();
+        $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+        if(is_array($result)){
+          $result = json_decode(json_encode($result));
+          if(strpos($result->detail,'274', 15)){
+            //return "Transacción anulada";
+            //Acá es cuando el cliente anula desde módulo de webpay transbank
+            $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+            return view('webpay.end');
+          }elseif(strpos($result->detail,'272', 15)){
+            //return "Error de transaccion por Timeout";
+            $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
+            $WebpayPago = $WebpayPago[0];
 
-          if($WebpayPago->estado_transaccion == 'ApprovedTransaction'){
-            $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$WebpayPago->ord_compra)->get();
-            $historial = json_decode(json_encode($historial[0]));
-            return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
+            if($WebpayPago->estado_transaccion == 'ApprovedTransaction'){
+              $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$WebpayPago->ord_compra)->get();
+              $historial = json_decode(json_encode($historial[0]));
+              return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
+            }else{
+              //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje
+              $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
+              //Cuando el estado no fue aprobado, lo redicrecciona a su vista correspondiente
+              return view('webpay.webpayResponseErrors.'.$WebpayPago->estado_transaccion);
+            }
           }else{
-            //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje
-            $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
-            //Cuando el estado no fue aprobado, lo redicrecciona a su vista correspondiente
-            return view('webpay.webpayResponseErrors.'.$WebpayPago->estado_transaccion);
+            $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+            return view('webpay.end');
           }
         }else{
-          //Acá es cuando el cliente anula desde módulo de webpay transbank
           $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
           return view('webpay.end');
         }
-      }catch(Exception $e){}
+      }catch(Exception $e){
+        $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+        return view('webpay.end');
+      }
     }
 
     public function procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA){
