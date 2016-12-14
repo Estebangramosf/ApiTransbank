@@ -276,7 +276,6 @@ class WebPayNormal {
             $xmlResponse = $this->soapClient->__getLastResponse();
             $soapValidation = new SoapValidation($xmlResponse, $this->config->getWebpayCert());
             $validationResult = $soapValidation->getValidationResult();
-
             /** Valida conexion a Webpay. Caso correcto retorna URL y Token */
             if ($validationResult === TRUE) {
 
@@ -290,14 +289,12 @@ class WebPayNormal {
             }
 
         } catch (Exception $e) {
-
             $error["error"]  = "Error conectando a Webpay (Verificar que la informaci&oacute;n del certificado sea correcta)";
-
             $replaceArray = array('<!--' => '', '-->' => '');
             $error["detail"] = str_replace(array_keys($replaceArray), array_values($replaceArray), $e->getMessage());
         }
-
-        return $error;
+        return view('webpay.end', ['error' => $error]);
+        //return $error;
     }
 
     /**
@@ -349,9 +346,7 @@ class WebPayNormal {
                 }
             }
         } catch (Exception $e) {
-
             $error["error"] = "Error conectando a Webpay (Verificar que la informaci&oacute;n del certificado sea correcta)";
-
             $replaceArray = array('<!--' => '', '-->' => '');
             $error["detail"] = str_replace(array_keys($replaceArray), array_values($replaceArray), $e->getMessage());
         }
