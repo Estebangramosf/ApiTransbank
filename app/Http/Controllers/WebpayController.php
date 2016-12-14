@@ -24,7 +24,7 @@ class WebpayController extends Controller
 
     }
 
-    public function index($a,$bO,$sId)
+    public function initTransaction($a,$bO,$sId)
     {
       try{
 
@@ -221,7 +221,7 @@ class WebpayController extends Controller
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->get();
 
          $WebpayPago = json_decode(json_encode($WebpayPago[0]));
-         
+
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
 
          return view('webpay.webpayResponseErrors.invalidWebpayCert');

@@ -109,7 +109,7 @@ class CelmediaPagoController extends Controller
           $result = '';
           if(count($historial)>0){
 
-            $result = $this->WebpayController->index($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+            $result = $this->WebpayController->initTransaction($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
 
 
           }
