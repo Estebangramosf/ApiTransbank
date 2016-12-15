@@ -63,7 +63,7 @@ class CelmediaPagoController extends Controller
             }
 
          }else{
-            $this->celmediaPagoPostInit($request);
+            return $this->celmediaPagoPostInit($request);
          }
 
 
