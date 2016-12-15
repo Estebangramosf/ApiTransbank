@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use App\TransactionValidation;
 use App\WebpayPago;
 use DateTime;
 use Exception;
@@ -32,85 +33,38 @@ class CelmediaPagoController extends Controller
       try{
 
 
-         dd($request);
-/*
-         "TBK_MONTO" => "171989"
-         "TBK_TIPO_TRANSACCION" => "TR_NORMAL"
-         "TBK_ORDEN_COMPRA" => "174"
-         "TBK_ID_SESION" => "174"
-         "TBK_RUT" => "116138328"
-         "TBK_CORPBANCA" => ""
-         "TBK_OTPC_WEB" => "359700"
-*/
 
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
 
+         //Filtro cuando se ingresa una transacción ya registrada
          if(count($WebpayPago)>0){
-            return "Existe una transaccion con esta orden de compra";
             $WebpayPago = json_decode(json_encode($WebpayPago[0]));
-            $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
-         }else{
-            return "No existe una transaccion con esta orden de compra";
-            dd($WebpayPago);
+            if($WebpayPago->estado_transaccion != 'ApprovedTransaction'){
+
+               $TV = TransactionValidation::where('TBK_ORDEN_COMPRA', '=',$WebpayPago->ord_compra)->get();
+
+               if(count($TV)>0){
+                  $TV[0]->delete();
+               }
+
+               $TransactionValidation = new TransactionValidation();
+
+               $TransactionValidation->TBK_MONTO = $request->TBK_MONTO;
+               $TransactionValidation->TBK_TIPO_TRANSACCION = $request->TBK_TIPO_TRANSACCION;
+               $TransactionValidation->TBK_ORDEN_COMPRA = $request->TBK_ORDEN_COMPRA;
+               $TransactionValidation->TBK_ID_SESION = $request->TBK_ID_SESION;
+               $TransactionValidation->TBK_RUT = $request->TBK_RUT;
+               $TransactionValidation->TBK_CORPBANCA = $request->TBK_CORPBANCA;
+               $TransactionValidation->TBK_OTPC_WEB = $request->TBK_OTPC_WEB;
+               $TransactionValidation->TRANSACTION_STATUS = $WebpayPago->estado_transaccion;
+               $TransactionValidation->save();
+
+               return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
+            }else{
+               return view('webpay.webpayValidations.TransactionAlreadyApproved');
+            }
+
          }
-
-
-
-        //Se crea el objeto $userResult como resultado de la verificación del usuario
-        $userResult = $this->verifyRUTExistanceAndGetUser($request);
-
-        //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
-        $request->TBK_MONTO=round($request->TBK_MONTO,0);
-
-
-
-        if( $userResult->pts >= $request->TBK_MONTO){
-
-          //Se genera el canje y solicitud de canje
-          $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
-
-
-          $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
-          if(count($historial)>0){
-
-            $historial = json_decode(json_encode($historial[0]));
-            return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
-
-          }
-
-          $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
-          //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
-          if(count($historial)==0){
-            return view('webpay.canjePendiente');
-          }
-
-
-
-        }else{
-
-          $total = ($userResult->pts - $request->TBK_MONTO);
-
-
-          $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
-
-          $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-          $result = '';
-          if(count($historial)>0){
-            $result = $this->WebpayController->initTransaction($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
-          }
-
-          $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
-
-          //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
-          if(count($historial)==0){
-            return view('webpay.canjePendiente');
-          }
-
-          return view('webpay.index', ['result'=>$result]);
-        }
 
 
       }catch(Exception $e){
@@ -123,8 +77,85 @@ class CelmediaPagoController extends Controller
 
 
 
-   public function celmediaPagoInit(){
+   public function celmediaPagoInit(Request $request){
+      try{
 
+         //Buscar el en tabla de paso TransactionValidations
+         //Hacer funcionar lo demás con los datos traídos
+         //Eliminar el registro anterior y crear una nueva transacción
+         //Verificar tambien que la transaccion esta aprobada o no
+
+         $request = TransactionValidation::where('TBK_ORDEN_COMPRA', '=',$request->TBK_ORDEN_COMPRA)->get();
+
+         if(count($request)>0){
+            $request = json_decode(json_encode($request[0]));
+         }
+
+         dd($request);
+
+
+
+         //Se crea el objeto $userResult como resultado de la verificación del usuario
+         $userResult = $this->verifyRUTExistanceAndGetUser($request);
+
+         //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
+         $request->TBK_MONTO=round($request->TBK_MONTO,0);
+
+
+
+         if( $userResult->pts >= $request->TBK_MONTO){
+
+            //Se genera el canje y solicitud de canje
+            $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
+
+
+            $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+            if(count($historial)>0){
+
+               $historial = json_decode(json_encode($historial[0]));
+               return view('webpay.responseCanjeNoTransbank', ['historial'=>$historial]);
+
+            }
+
+            $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+            //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
+            if(count($historial)==0){
+               return view('webpay.canjePendiente');
+            }
+
+
+
+         }else{
+
+            $total = ($userResult->pts - $request->TBK_MONTO);
+
+
+            $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
+
+            $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+            $result = '';
+            if(count($historial)>0){
+               $result = $this->WebpayController->initTransaction($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
+            }
+
+            $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+
+            //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
+            if(count($historial)==0){
+               return view('webpay.canjePendiente');
+            }
+
+            return view('webpay.index', ['result'=>$result]);
+         }
+
+
+
+      }catch(Exception $e){
+         return view('webpay.webpayResponseErrors.invalidWebpayCert');
+      }
    }
 
 

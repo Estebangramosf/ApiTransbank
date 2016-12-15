@@ -14,6 +14,6 @@ class VerifyCsrfToken extends BaseVerifier
     protected $except = [
         '/getResult',
         '/end',
-        '/getShoppingCart'
+        '/getShoppingCart',
     ];
 }

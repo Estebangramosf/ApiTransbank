@@ -15,6 +15,7 @@ class TransactionValidation extends Model
        'TBK_RUT',
        'TBK_CORPBANCA',
        'TBK_OTPC_WEB',
+       'STATUS_TRANSACTION',
     ];
 
 
