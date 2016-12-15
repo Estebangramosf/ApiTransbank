@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use App\WebpayPago;
 use DateTime;
 use Exception;
 use Illuminate\Console\Parser;
@@ -31,17 +32,28 @@ class CelmediaPagoController extends Controller
       try{
 
 
-        //"TBK_ORDEN_COMPRA" => "140"
-        //"TBK_ID_SESION" => "140"
+         dd($request);
+/*
+         "TBK_MONTO" => "171989"
+         "TBK_TIPO_TRANSACCION" => "TR_NORMAL"
+         "TBK_ORDEN_COMPRA" => "174"
+         "TBK_ID_SESION" => "174"
+         "TBK_RUT" => "116138328"
+         "TBK_CORPBANCA" => ""
+         "TBK_OTPC_WEB" => "359700"
+*/
 
-        /*
-        $request->TBK_ID_SESION=date("YmdHms").rand(1,999).uniqid();
+         $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
 
-        $fechhora=date("Y-m-d")."".date("H:i:s");
-        $festamp = new DateTime($fechhora);
-        $fechadat=$festamp->getTimestamp();
-        $request->TBK_ORDEN_COMPRA = $fechadat;
-        */
+         if(count($WebpayPago)>0){
+            return "Existe una transaccion con esta orden de compra";
+            $WebpayPago = json_decode(json_encode($WebpayPago[0]));
+            $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
+         }else{
+            return "No existe una transaccion con esta orden de compra";
+            dd($WebpayPago);
+         }
+
 
 
         //Se crea el objeto $userResult como resultado de la verificación del usuario
@@ -53,15 +65,6 @@ class CelmediaPagoController extends Controller
 
 
         if( $userResult->pts >= $request->TBK_MONTO){
-          /*
-          echo "Los puntos le alcanzan . <br>".
-            'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
-            'Total restante después del canje : '.($userResult->pts - $request->TBK_MONTO);
-          */
-          //Se traen los datos del canje, la respuesta del canje
-          //$historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-          //if(isset($historial[0])){
-
 
           //Se genera el canje y solicitud de canje
           $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
@@ -87,19 +90,6 @@ class CelmediaPagoController extends Controller
 
         }else{
 
-          //return view('webpay.exito');
-          //return view('webpay.celmediaPago');
-
-          //En esta parte se debiese guardar los datos y generar el pago por transbank para el usuario
-          //Tomando la diferencia de los puntos y generar el cobro en base a los puntos
-          /*
-          return "Los puntos no le alcanzan . <br>".
-            'Pts Usuario : '.($userResult->pts .' | Costo : '. $request->TBK_MONTO).'<br>'.
-            'Total restante después del canje : '.($total = ($userResult->pts - $request->TBK_MONTO)).'<br>'.
-            'Se debe generar el pago mediante transbank por los puntos restantes. <br>'.
-            'Total en Pesos a Pagar con Transbank : $'.$total*-3;
-          */
-
           $total = ($userResult->pts - $request->TBK_MONTO);
 
 
@@ -108,10 +98,7 @@ class CelmediaPagoController extends Controller
           $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
           $result = '';
           if(count($historial)>0){
-
             $result = $this->WebpayController->initTransaction($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
-
-
           }
 
           $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
@@ -122,9 +109,7 @@ class CelmediaPagoController extends Controller
             return view('webpay.canjePendiente');
           }
 
-
           return view('webpay.index', ['result'=>$result]);
-
         }
 
 
@@ -134,10 +119,13 @@ class CelmediaPagoController extends Controller
         return view('webpay.webpayResponseErrors.invalidWebpayCert');
       }
 
-
-
     }//End function getShoppingCart()
 
+
+
+   public function celmediaPagoInit(){
+
+   }
 
 
     //Funcion que verifica si el rut del usuario existe mediante request y devuelve al usuario como objeto de la clase
