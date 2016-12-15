@@ -59,12 +59,12 @@ class WebpayController extends Controller
         );
 
         /** Iniciamos Transaccion */
-        //dd($request);
+
 
 
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
 
-        //dd($result);
+
 
         //Guardamos el token para despues actualizar con el resto de la información
         $WebpayPago = new WebpayPago();
@@ -74,6 +74,8 @@ class WebpayController extends Controller
         $WebpayPago->token_ws = $result->token;
         $WebpayPago->estado_transaccion = 'initTransaction';
         $WebpayPago->save();
+
+
 
         return $result;
       }catch(Exception $e){

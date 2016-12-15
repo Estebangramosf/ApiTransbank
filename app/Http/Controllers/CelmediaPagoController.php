@@ -32,8 +32,6 @@ class CelmediaPagoController extends Controller
     public function getShoppingCart(Request $request){
       try{
 
-
-
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
 
          //Filtro cuando se ingresa una transacción ya registrada
@@ -64,7 +62,10 @@ class CelmediaPagoController extends Controller
                return view('webpay.webpayValidations.TransactionAlreadyApproved');
             }
 
+         }else{
+            $this->celmediaPagoPostInit($request);
          }
+
 
 
       }catch(Exception $e){
@@ -77,11 +78,13 @@ class CelmediaPagoController extends Controller
 
 
 
+
+
    public function celmediaPagoInit(Request $request){
       try{
 
-         //Buscar el en tabla de paso TransactionValidations
-         //Hacer funcionar lo demás con los datos traídos
+         //Buscar el en tabla de paso TransactionValidations               OK
+         //Hacer funcionar lo demás con los datos traídos                  OK
          //Eliminar el registro anterior y crear una nueva transacción
          //Verificar tambien que la transaccion esta aprobada o no
 
@@ -91,15 +94,35 @@ class CelmediaPagoController extends Controller
             $request = json_decode(json_encode($request[0]));
          }
 
-         dd($request);
+         if($request->TRANSACTION_STATUS == 'ApprovedTransaction'){
+            return view('webpay.webpayValidations.TransactionAlreadyApproved');
+         }
+
+         $WebpayPagoOld = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
+         if(count($WebpayPagoOld)>0){
+            $WebpayPagoOld[0]->delete();
+         }
+
+
+         return $this->celmediaPagoPostInit($request);
 
 
 
+      }catch(Exception $e){
+         return view('webpay.webpayResponseErrors.invalidWebpayCert');
+      }
+   }
+
+   public function celmediaPagoPostInit($request){
+      try{
          //Se crea el objeto $userResult como resultado de la verificación del usuario
          $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
+
+
          //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
          $request->TBK_MONTO=round($request->TBK_MONTO,0);
+
 
 
 
@@ -132,15 +155,23 @@ class CelmediaPagoController extends Controller
             $total = ($userResult->pts - $request->TBK_MONTO);
 
 
+
             $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
 
+
+
             $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
+
+
             $result = '';
+
             if(count($historial)>0){
                $result = $this->WebpayController->initTransaction($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
             }
 
             $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
+
 
 
             //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
@@ -150,18 +181,16 @@ class CelmediaPagoController extends Controller
 
             return view('webpay.index', ['result'=>$result]);
          }
-
-
-
       }catch(Exception $e){
          return view('webpay.webpayResponseErrors.invalidWebpayCert');
       }
+
    }
 
 
     //Funcion que verifica si el rut del usuario existe mediante request y devuelve al usuario como objeto de la clase
     //En caso que el usuario no exista, redirecciona al usuario
-    public function verifyRUTExistanceAndGetUser(Request $request){
+    public function verifyRUTExistanceAndGetUser($request){
       try{
         if($request->TBK_RUT && isset($request->TBK_RUT)){
           //Obtiene la informacion del cliente, si no existe lo registra, si existe, actualiza los puntos desde WS
@@ -292,20 +321,6 @@ class CelmediaPagoController extends Controller
             return true;
           }else{
             return true;
-            /*
-            if(isset($historial[0])){
-              $historial = json_decode(json_encode($historial[0]));
-            }
-            if(isset($historial->rut)){
-              //Se busca y actualizan los puntos del usuario, luego se guarda
-              $historial=HistorialCanje::findOrFail($historial->id);
-              dd($historial);
-              $historial->save();
-              return true;
-            }else{
-              return true;
-            }
-            */
           }
         });
 
