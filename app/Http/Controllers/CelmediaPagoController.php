@@ -129,6 +129,7 @@ class CelmediaPagoController extends Controller
 
 
       }catch(Exception $e){
+        //dd($e);
         //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
         return view('webpay.webpayResponseErrors.invalidWebpayCert');
       }

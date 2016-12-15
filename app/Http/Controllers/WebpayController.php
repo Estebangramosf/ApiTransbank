@@ -61,6 +61,7 @@ class WebpayController extends Controller
         /** Iniciamos Transaccion */
         //dd($request);
 
+
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
 
         //dd($result);
@@ -218,6 +219,7 @@ class WebpayController extends Controller
           }
       }catch(Exception $e){
          //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
+         //dd($e);
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->get();
 
          $WebpayPago = json_decode(json_encode($WebpayPago[0]));
