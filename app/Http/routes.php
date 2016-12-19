@@ -12,6 +12,7 @@
 */
 
 Route::get('vt', 'WebserviceController@validaTarjetaCorpbanca');
+Route::post('validateCorpbancaCard', 'WebserviceController@validateCorpbancaCard');
 
 
 Route::get('ws', 'WebserviceController@index');
