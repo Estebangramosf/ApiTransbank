@@ -79,6 +79,9 @@
         <input type="hidden" name="CELPAGO_ID_CART" value="{{$historial->ordenCompraCarrito}}">
         <input type="hidden" name="CELPAGO_COD_CANJE" value="{{$historial->id_transaccion}}">
         <input type="hidden" name="CELPAGO_PUNTOS" value="{{$historial->puntos}}">
+        <input type="hidden" name="CELPAGO_AUTHORIZATION_CODE" value="{{$historial->authorization_code}}">
+        <input type="hidden" name="CELPAGO_PAYMENT_TYPE_CODE" value="{{$historial->payment_type_code}}">
+        <input type="hidden" name="CELPAGO_SHARES_NUMBER" value="{{$historial->shares_number}}">
 
       </form>
 

@@ -30,6 +30,8 @@ class CreateWebpayPagosTable extends Migration
             $table->string('authorization_code');
             $table->string('payment_type_code');
             $table->string('response_code');
+            $table->string('shares_amount');
+            $table->string('shares_number');
             $table->string('commerce_code');
             $table->string('transaction_date');
             $table->string('vci');

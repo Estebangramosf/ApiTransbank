@@ -101,27 +101,9 @@ class WebpayController extends Controller
 
         $wp = $this->setParametersForTransbankTransactions();
 
-           /*
-             "getTransactionResult" => "getTransactionResult"
-             "getTransactionResultResponse" => "getTransactionResultResponse"
-             "transactionResultOutput" => "transactionResultOutput"
-             "cardDetail" => "cardDetail"
-             "wsTransactionDetailOutput" => "wsTransactionDetailOutput"
-             "wsTransactionDetail" => "wsTransactionDetail"
-             "acknowledgeTransaction" => "acknowledgeTransaction"
-             "acknowledgeTransactionResponse" => "acknowledgeTransactionResponse"
-             "initTransaction" => "initTransaction"
-             "wsInitTransactionInput" => "wsInitTransactionInput"
-             "wpmDetailInput" => "wpmDetailInput"
-             "initTransactionResponse" => "initTransactionResponse"
-             "wsInitTransactionOutput" => "wsInitTransactionOutput"
-           */
         //dd($request);
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
         //dd($result);
-
-        //dd($knowledge);
-
 
         //Desde acá filtrar el response code
 
@@ -163,55 +145,7 @@ class WebpayController extends Controller
             $this->saveTransactionResult($request->token_ws, $result, 'TransactionUnauthorizedItem');
             break;
         }
-          /*
 
-                transactionResultOutput {#163 ▼                                                       OK--
-                  +accountingDate: "1207"                                                             OK
-                  +buyOrder: "108"                                                                    OK
-                  +cardDetail: cardDetail {#169 ▼                                                     OK--
-                    +cardNumber: "6623"                                                               OK
-                    +cardExpirationDate: null                                                         OK
-                  }
-                  +detailOutput: wsTransactionDetailOutput {#165 ▼
-                    +authorizationCode: "1213"                                                        OK
-                    +paymentTypeCode: "VN"                                                            OK
-                    +responseCode: 0                                                                  OK
-                    +sharesAmount: null
-                    +sharesNumber: 0
-                    +amount: "87978"                                                                  OK
-                    +commerceCode: "597020000541"                                                     OK
-                  +buyOrder: "108"                                                                    OK
-                  }
-                  +sessionId: "108"                                                                   OK
-                  +transactionDate: "2016-12-07T18:32:39.536-03:00"                                   OK
-                  +urlRedirection: "https://webpay3gint.transbank.cl/filtroUnificado/voucher.cgi"     OK#Generico constante
-                  +VCI: "TSY"                                                                         OK
-                }
-
-                $table->increments('id');
-                $table->integer('pago_id');
-                $table->integer('monto_puntos');
-                $table->integer('monto_dinero');            OK
-                $table->integer('diferencia');
-                $table->integer('estado_pago');
-                $table->string('ord_compra');               OK
-                $table->string('id_sesion');                OK
-                $table->date('Y-m-d H:i:s');                OK  fhtransaccion
-                $table->string('token_ws');                 OK
-                $table->string('accounting_date');          OK
-                $table->string('card_detail');
-                $table->string('card_number');              OK
-                $table->string('card_expiration_date');     OK
-                $table->string('authorization_code');       OK
-                $table->string('payment_type_code');        OK
-                $table->string('response_code');            OK
-                $table->string('commerce_code');            OK
-                $table->string('transaction_date');         OK  colocar un datetime manual
-                $table->string('vci');                      OK
-                $table->string('tp_transaction');           OK  TR_NORMAL_WS
-                $table->date('tpago');                      OK
-                $table->date('hora_pago');                  OK
-        */
           //traer los datos del carro $result->buyOrder
           $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $result->buyOrder)->get();
           if (count($historial) == 1) {
@@ -221,15 +155,10 @@ class WebpayController extends Controller
           }
       }catch(Exception $e){
          //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
-         //dd($e);
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->get();
-
          $WebpayPago = json_decode(json_encode($WebpayPago[0]));
-
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
-
          return view('webpay.webpayResponseErrors.invalidWebpayCert');
-
       }
 
     }
@@ -240,6 +169,8 @@ class WebpayController extends Controller
         $WebpayPago = WebpayPago::where('token_ws', $token_ws)->get();
         $WebpayPago = $WebpayPago[0];
 
+        //dd($result);
+
         $WebpayPago->accounting_date = $result->accountingDate;
         $WebpayPago->ord_compra = $result->buyOrder;
         $WebpayPago->id_sesion = $result->sessionId;
@@ -249,6 +180,8 @@ class WebpayController extends Controller
         $WebpayPago->authorization_code = $result->detailOutput->authorizationCode;
         $WebpayPago->payment_type_code = $result->detailOutput->paymentTypeCode;
         $WebpayPago->response_code = $result->detailOutput->responseCode;
+        $WebpayPago->shares_number = $result->detailOutput->sharesNumber;
+        $WebpayPago->shares_amount = $result->detailOutput->sharesAmount;
         $WebpayPago->monto_dinero = $result->detailOutput->amount;
         $WebpayPago->commerce_code = $result->detailOutput->commerceCode;
         $WebpayPago->transaction_date = $result->transactionDate;
@@ -286,6 +219,12 @@ class WebpayController extends Controller
             if($WebpayPago->estado_transaccion == 'ApprovedTransaction'){
               $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$WebpayPago->ord_compra)->get();
               $historial = json_decode(json_encode($historial[0]));
+              $historial->authorization_code = $WebpayPago->authorization_code;
+              $historial->payment_type_code = $WebpayPago->paymentTypeCode;
+              $historial->shares_number = $WebpayPago->sharesNumber;
+
+              //dd($historial);
+
               return view('webpay.responseCanjeSiTransbank', ['historial'=>$historial]);
             }else{
               //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje
