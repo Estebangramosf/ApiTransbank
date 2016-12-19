@@ -216,12 +216,14 @@ class WebpayController extends Controller
             $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
             $WebpayPago = $WebpayPago[0];
 
+
+
             if($WebpayPago->estado_transaccion == 'ApprovedTransaction'){
               $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$WebpayPago->ord_compra)->get();
               $historial = json_decode(json_encode($historial[0]));
               $historial->authorization_code = $WebpayPago->authorization_code;
-              $historial->payment_type_code = $WebpayPago->paymentTypeCode;
-              $historial->shares_number = $WebpayPago->sharesNumber;
+              $historial->payment_type_code = $WebpayPago->payment_type_code;
+              $historial->shares_number = $WebpayPago->shares_number;
 
               //dd($historial);
 
@@ -234,15 +236,15 @@ class WebpayController extends Controller
             }
           }else{
             $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-            return view('webpay.end');
+            return view('webpay.end', ['TBK_ORDEN_COMPRA'=>$request->TBK_ORDEN_COMPRA]);
           }
         }else{
           $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-          return view('webpay.end');
+          return view('webpay.end', ['TBK_ORDEN_COMPRA'=>$request->TBK_ORDEN_COMPRA]);
         }
       }catch(Exception $e){
         $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-        return view('webpay.end');
+        return view('webpay.end', ['TBK_ORDEN_COMPRA'=>$request->TBK_ORDEN_COMPRA]);
       }
     }
 
@@ -255,7 +257,7 @@ class WebpayController extends Controller
 
       }catch(Exception $e){
          $this->procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA);
-         return view('webpay.end');
+        return view('webpay.end', ['TBK_ORDEN_COMPRA'=>$TBK_ORDEN_COMPRA]);
       }
     }
 
