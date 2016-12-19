@@ -210,7 +210,7 @@ class WebpayController extends Controller
             //return "Transacción anulada";
             //Acá es cuando el cliente anula desde módulo de webpay transbank
             $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-            return view('webpay.end');
+            return view('webpay.end', ['TBK_ORDEN_COMPRA'=>$request->TBK_ORDEN_COMPRA]);
           }elseif(strpos($result->detail,'272', 15)){
             //return "Error de transaccion por Timeout";
             $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
