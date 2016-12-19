@@ -32,7 +32,7 @@ class CelmediaPagoController extends Controller
     public function getShoppingCart(Request $request){
       try{
 
-         $request->TBK_ORDEN_COMPRA = "182";
+         //$request->TBK_ORDEN_COMPRA = "182";
 
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
 

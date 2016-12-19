@@ -32,8 +32,8 @@
          padding: 0;
          width: 100%;
          display: table;
-         font-weight: 200;
          font-family: 'Lato';
+         font-weight: 400;
       }
 
       .container {
@@ -72,7 +72,7 @@
          <form id="form1" name="form1" method="post" action="http://192.168.1.192/celmediaPagoInit" autocomplete="off"  onSubmit="">
             <input type="hidden" name="TBK_ORDEN_COMPRA" value="{{$TBK_ORDEN_COMPRA}}">
             {{csrf_field()}}
-            <button type="submit" class="btn btn-success btn-lg">Continuar ...</button>
+            <button type="submit" class="btn btn-success btn-lg"><b>Continuar ...</b></button>
          </form>
 
       </div>

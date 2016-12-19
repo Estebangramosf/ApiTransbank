@@ -315,7 +315,7 @@ class WebpayController extends Controller
         $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
 
       }catch(Exception $e){
-         $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+         $this->procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA);
          return view('webpay.end');
       }
     }
