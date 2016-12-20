@@ -11,8 +11,15 @@
 |
 */
 
-Route::get('vt', 'WebserviceController@validaTarjetaCorpbanca');
+
 Route::post('validateCorpbancaCard', 'WebserviceController@validateCorpbancaCard');
+
+Route::get('testAjax',function(){
+    return view('testAjax');
+});
+Route::get('vt', 'WebserviceController@validaTarjetaCorpbanca');
+
+
 
 
 Route::get('ws', 'WebserviceController@index');

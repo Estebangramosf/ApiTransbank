@@ -296,6 +296,11 @@ class CelmediaPagoController extends Controller
           'tdv_otpc'=>'31',
         ];
 
+         //Consumir webserice de prestashop y concatenarlos
+         //Crear funcion que trae productos concatenados
+         //Reemplazar $data['descripcion'] por el resultado de la función que trae los valores del webservice que se consume de PS
+
+
         // Se usa el nuevo webservice creado
         SoapWrapper::service('ConfirmaCanje', function ($service) use ($data,$ordenCompraCarrito) {
 

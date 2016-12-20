@@ -13,9 +13,12 @@ class WebserviceController extends Controller
 {
     private $result;
 
+    public function __construct()
+    {
+    }
+
     public function validateCorpbancaCard(Request $request){
         try {
-
             //Se instancia un nuevo comunicador de webservice con SoapWrapper
             SoapWrapper::add(function ($service) {
                 $service
@@ -28,7 +31,7 @@ class WebserviceController extends Controller
             $data = [
                'usuario'=>'celmediapago',
                'password'=>'0x552A6798E1F1BCF715EFDB1E1DDC0874',
-               'cardnumber'=>$request->digito,
+               'cardnumber'=>$request->cardNumber,
                 //'cardnumber'=>'123432423',
             ];
 
@@ -36,8 +39,8 @@ class WebserviceController extends Controller
             SoapWrapper::service('currency', function ($service) use ($data) {
                 $this->result = $service->call('ConsultaValidaTarjetaCorpbancaWSCLOTPC', [$data]);
             });
-
-            return $this->result->RC;
+            return response()->json($this->result->RC);
+            //return $this->result->RC;
 
         } catch(Exception $e) {
             dd($e);
@@ -81,12 +84,6 @@ class WebserviceController extends Controller
         */
     }
 
-
-    public function __construct()
-    {
-
-
-    }
 
     /**
      * Display a listing of the resource.
