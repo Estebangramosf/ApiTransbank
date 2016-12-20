@@ -32,7 +32,7 @@ class CelmediaPagoController extends Controller
     public function getShoppingCart(Request $request){
       try{
 
-         //$request->TBK_ORDEN_COMPRA = "182";
+         $request->TBK_ORDEN_COMPRA = "212";
 
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
 
@@ -61,7 +61,11 @@ class CelmediaPagoController extends Controller
 
                return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
             }else{
+
+
+
                return view('webpay.webpayValidations.TransactionAlreadyApproved');
+
             }
 
          }else{
