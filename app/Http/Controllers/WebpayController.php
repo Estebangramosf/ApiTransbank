@@ -75,11 +75,11 @@ class WebpayController extends Controller
         $WebpayPago->estado_transaccion = 'initTransaction';
         $WebpayPago->save();
 
+         return view('webpay.index', ['result'=>$result]);
 
 
-        return $result;
       }catch(Exception $e){
-
+         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $bO]);
       }
     }
 
@@ -158,7 +158,7 @@ class WebpayController extends Controller
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->get();
          $WebpayPago = json_decode(json_encode($WebpayPago[0]));
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
-         return view('webpay.webpayResponseErrors.invalidWebpayCert');
+         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA'=>$WebpayPago->ord_compra]);
       }
 
     }
@@ -206,6 +206,9 @@ class WebpayController extends Controller
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
         if(is_array($result)){
           $result = json_decode(json_encode($result));
+
+           //dd($result);
+
           if(strpos($result->detail,'274', 15)){
             //return "Transacción anulada";
             //Acá es cuando el cliente anula desde módulo de webpay transbank
@@ -232,7 +235,7 @@ class WebpayController extends Controller
               //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje
               $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
               //Cuando el estado no fue aprobado, lo redicrecciona a su vista correspondiente
-              return view('webpay.webpayResponseErrors.'.$WebpayPago->estado_transaccion);
+              return view('webpay.webpayResponseErrors.'.$WebpayPago->estado_transaccion, ['TBK_ORDEN_COMPRA'=>$WebpayPago->ord_compra]);
             }
           }else{
             $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);

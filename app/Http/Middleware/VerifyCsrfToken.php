@@ -15,5 +15,6 @@ class VerifyCsrfToken extends BaseVerifier
         '/getResult',
         '/end',
         '/getShoppingCart',
+        '/celmediaPagoInit',
     ];
 }

@@ -71,9 +71,9 @@ class CelmediaPagoController extends Controller
 
 
       }catch(Exception $e){
-        //dd($e);
+         //dd($e);
         //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
-        return view('webpay.webpayResponseErrors.invalidWebpayCert');
+        return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
       }
 
     }//End function getShoppingCart()
@@ -111,7 +111,8 @@ class CelmediaPagoController extends Controller
 
 
       }catch(Exception $e){
-         return view('webpay.webpayResponseErrors.invalidWebpayCert');
+
+         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
       }
    }
 
@@ -120,19 +121,13 @@ class CelmediaPagoController extends Controller
          //Se crea el objeto $userResult como resultado de la verificación del usuario
          $userResult = $this->verifyRUTExistanceAndGetUser($request);
 
-
-
          //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
          $request->TBK_MONTO=round($request->TBK_MONTO,0);
-
-
-
 
          if( $userResult->pts >= $request->TBK_MONTO){
 
             //Se genera el canje y solicitud de canje
             $this->generateSwap($request->TBK_RUT,$request->TBK_MONTO,$request->TBK_OTPC_WEB,0,$request->TBK_ORDEN_COMPRA);
-
 
             $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
 
@@ -150,21 +145,19 @@ class CelmediaPagoController extends Controller
                return view('webpay.canjePendiente');
             }
 
-
-
          }else{
 
             $total = ($userResult->pts - $request->TBK_MONTO);
 
 
 
-            $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA) ;
+            $this->generateSwap($request->TBK_RUT,$userResult->pts,$request->TBK_OTPC_WEB,($total*-3),$request->TBK_ORDEN_COMPRA);
 
 
 
             $historial = HistorialCanje::where('estado','encanje')->where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
 
-
+            ;
 
             $result = '';
 
@@ -172,19 +165,21 @@ class CelmediaPagoController extends Controller
                $result = $this->WebpayController->initTransaction($total*-3,$request->TBK_ORDEN_COMPRA,$request->TBK_ID_SESION);
             }
 
+
             $historial = HistorialCanje::where('ordenCompraCarrito',$request->TBK_ORDEN_COMPRA)->get();
-
-
 
             //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if(count($historial)==0){
                return view('webpay.canjePendiente');
             }
 
-            return view('webpay.index', ['result'=>$result]);
+            return $result;
+
          }
       }catch(Exception $e){
-         return view('webpay.webpayResponseErrors.invalidWebpayCert');
+         //Aca se cae en la primera validación de error de certificados
+
+         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA'=>$request->TBK_ORDEN_COMPRA]);
       }
 
    }
