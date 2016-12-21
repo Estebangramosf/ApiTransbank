@@ -31,7 +31,7 @@ class WebserviceController extends Controller
             $data = [
                'usuario'=>'celmediapago',
                'password'=>'0x552A6798E1F1BCF715EFDB1E1DDC0874',
-               'cardnumber'=>$request->cardNumber,
+               'cardnumber'=>$request->digito,
                 //'cardnumber'=>'123432423',
             ];
 
@@ -39,7 +39,7 @@ class WebserviceController extends Controller
             SoapWrapper::service('currency', function ($service) use ($data) {
                 $this->result = $service->call('ConsultaValidaTarjetaCorpbancaWSCLOTPC', [$data]);
             });
-            return response()->json($this->result->RC);
+            return response()->json(['RC'=>$this->result->RC,'RD'=>$this->result->RD]);
             //return $this->result->RC;
 
         } catch(Exception $e) {

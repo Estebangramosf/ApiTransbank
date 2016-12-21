@@ -16,5 +16,6 @@ class VerifyCsrfToken extends BaseVerifier
         '/end',
         '/getShoppingCart',
         '/celmediaPagoInit',
+        '/validateCorpbancaCard',
     ];
 }
