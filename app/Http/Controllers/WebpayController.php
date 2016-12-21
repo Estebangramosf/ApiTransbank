@@ -203,7 +203,7 @@ class WebpayController extends Controller
          //en esta parte debiese eliminar la validation_transaction
 
         $wp = $this->setParametersForTransbankTransactions();
-        dd($request);
+        //dd($request);
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
         //dd($result);
         if(is_array($result)){

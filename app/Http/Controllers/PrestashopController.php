@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -10,35 +11,57 @@ use Prestashop;
 class PrestashopController extends Controller
 {
 
-   public function test(){
-      //dd(Prestashop::class);
+   //dd(Prestashop::class);
 
+   //$opt['resource'] = 'products';
+   //$opt['display'] = 'full';
 
-      //$opt['resource'] = 'products';
-      //$opt['display'] = 'full';
+   //$opt['resource'] = 'order_details';
+   //$opt['display'] = 'full';
+   //$opt['id'] = 20;
 
-      //$opt['resource'] = 'order_details';
-      //$opt['display'] = 'full';
-      //$opt['id'] = 20;
+   private $opt;
+   private $xml;
 
-      $opt = array('resource' => 'carts', 'filter[id]' => 220, 'display' => 'full');
+   private $products;
+   private $productDetailed;
 
+   private $productNames;
+   private $productReferences;
+   private $productPrices;
 
-      $xml = Prestashop::get($opt);
+   private $returnProducts=[];
 
-      $result = $xml->children()->children()->children()->associations->children()->cart_rows->children();
-      foreach($result as $item){
-         //dd($item);
-         $opt = array('resource' => 'products', 'filter[id]' => $item->product_id, 'display' => 'full');
-         $xml = Prestashop::get($opt);
-         dd($xml);
+   public function prestashopProducts(){
 
+      try{
+         
+         $this->opt = ['resource' => 'carts', 'filter[id]' => 231, 'display' => 'full'];
+         $this->xml = Prestashop::get($this->opt);
+         $this->products = $this->xml->children()->children()->children()->associations->children()->cart_rows->children();
+
+         foreach($this->products as $key => $product){
+
+            $this->opt = ['resource' => 'products', 'display' => 'full', 'filter[id]' => (int)$product->id_product];
+            $this->productDetailed = Prestashop::get($this->opt);
+
+            $this->productNames .= (string)$this->productDetailed->products->product->meta_description->language . ' | '; //Nombre
+            $this->productReferences .= (string)$this->productDetailed->products->product->reference . ' | '; //Referencia
+            $this->productPrices .= (int)$this->productDetailed->products->product->price . ' | '; //Puntos
+
+         }
+
+         $this->returnProducts = json_decode(json_encode([
+            'names'=>$this->productNames,
+            'references'=>$this->productReferences,
+            'prices'=>$this->productPrices,
+         ]));
+
+         return dd($this->returnProducts);
+      }catch(Exception $e){
+         return dd($e);
       }
 
-
-
-      //dd($xml->children()->children()->children()->associations->children()->cart_rows->children());
-      //dd($xml->children());
    }
 
 
