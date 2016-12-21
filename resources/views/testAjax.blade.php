@@ -66,7 +66,7 @@
 
                function validateCorpbancaCard(){
                   var token = $("#token").val();
-                  var cardNumber = $("#digito").val();
+                  var digito = $("#digito").val();
                   $.ajax({
                      url: "http://dev.apitransbank.com/validateCorpbancaCard",
                      type: 'post',

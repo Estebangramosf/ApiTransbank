@@ -26,7 +26,18 @@ class PrestashopController extends Controller
 
       $xml = Prestashop::get($opt);
 
-      dd($xml);
+      $result = $xml->children()->children()->children()->associations->children()->cart_rows->children();
+      foreach($result as $item){
+         //dd($item);
+         $opt = array('resource' => 'products', 'filter[id]' => $item->product_id, 'display' => 'full');
+         $xml = Prestashop::get($opt);
+         dd($xml);
+
+      }
+
+
+
+      //dd($xml->children()->children()->children()->associations->children()->cart_rows->children());
       //dd($xml->children());
    }
 
