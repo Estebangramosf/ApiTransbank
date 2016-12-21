@@ -31,9 +31,7 @@ class CelmediaPagoController extends Controller
 
     public function getShoppingCart(Request $request){
       try{
-
-         $request->TBK_ORDEN_COMPRA = "212";
-
+         
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
 
          //Filtro cuando se ingresa una transacción ya registrada
