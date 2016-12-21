@@ -329,7 +329,7 @@ class WebPayNormal {
             if ($validationResult === TRUE) {
 
                 $transactionResultOutput = $getTransactionResultResponse->return;
-
+                dd($transactionResultOutput);
                 /** Indica a Webpay que se ha recibido conforme el resultado de la transacción */
                 //dd($this->acknowledgeTransaction($token));
                 if ($this->acknowledgeTransaction($token)) {
