@@ -40,7 +40,7 @@
 
                      <form method="post" action="">
 
-                        <input type="text" name="cardNumber" id="cardNumber" value="123123">
+                        <input type="text" name="digito" id="digito" value="123123">
                         <input type="hidden" value="{{csrf_token()}}" name="token" id="token">
                         <span id="button" class="btn btn-default btn-md button">Validar</span>
 
@@ -66,7 +66,7 @@
 
                function validateCorpbancaCard(){
                   var token = $("#token").val();
-                  var cardNumber = $("#cardNumber").val();
+                  var cardNumber = $("#digito").val();
                   $.ajax({
                      url: "http://dev.apitransbank.com/validateCorpbancaCard",
                      type: 'post',
@@ -80,7 +80,7 @@
                      },
                      dataType: 'json',
                      data:{
-                        cardNumber:cardNumber
+                        digito:digito
                      },
                      success: function success(data) {
                         console.log(data);
