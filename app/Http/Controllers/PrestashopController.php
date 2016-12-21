@@ -32,23 +32,20 @@ class PrestashopController extends Controller
 
    private $returnProducts=[];
 
-   public function prestashopProducts(){
-
+   public function prestashopGetProductsDetails(){
       try{
-         
+
          $this->opt = ['resource' => 'carts', 'filter[id]' => 231, 'display' => 'full'];
          $this->xml = Prestashop::get($this->opt);
          $this->products = $this->xml->children()->children()->children()->associations->children()->cart_rows->children();
 
          foreach($this->products as $key => $product){
-
             $this->opt = ['resource' => 'products', 'display' => 'full', 'filter[id]' => (int)$product->id_product];
             $this->productDetailed = Prestashop::get($this->opt);
 
             $this->productNames .= (string)$this->productDetailed->products->product->meta_description->language . ' | '; //Nombre
             $this->productReferences .= (string)$this->productDetailed->products->product->reference . ' | '; //Referencia
             $this->productPrices .= (int)$this->productDetailed->products->product->price . ' | '; //Puntos
-
          }
 
          $this->returnProducts = json_decode(json_encode([
@@ -61,7 +58,6 @@ class PrestashopController extends Controller
       }catch(Exception $e){
          return dd($e);
       }
-
    }
 
 

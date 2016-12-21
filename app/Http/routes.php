@@ -41,7 +41,7 @@ Route::post('getShoppingCart','CelmediaPagoController@getShoppingCart');
 Route::post('celmediaPagoInit','CelmediaPagoController@celmediaPagoInit');
 
 //Route for Prestashop WebServices
-Route::get('prestashopProducts','PrestashopController@prestashopProducts');
+Route::get('prestashopGetProductsDetails','PrestashopController@prestashopGetProductsDetails');
 
 Route::get('/', function () {
     return view('welcome');
