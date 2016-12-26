@@ -273,6 +273,8 @@ class WebPayNormal {
                     array("wsInitTransactionInput" => $wsInitTransactionInput)
             );
 
+
+
             /** Validación de firma del requerimiento de respuesta enviado por Webpay */
             $xmlResponse = $this->soapClient->__getLastResponse();
             $soapValidation = new SoapValidation($xmlResponse, $this->config->getWebpayCert());
@@ -319,8 +321,8 @@ class WebPayNormal {
             $getTransactionResult = new getTransactionResult();
 
             $getTransactionResult->tokenInput = $token;
-            dd($getTransactionResult);
-            $getTransactionResultResponse = dd($this->_getTransactionResult($getTransactionResult));
+            //dd($getTransactionResult);
+            $getTransactionResultResponse = $this->_getTransactionResult($getTransactionResult);
 
             /** Validación de firma del requerimiento de respuesta enviado por Webpay */
             $xmlResponse = $this->soapClient->__getLastResponse();

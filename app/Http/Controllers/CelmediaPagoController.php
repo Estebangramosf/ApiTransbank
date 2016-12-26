@@ -39,12 +39,11 @@ class CelmediaPagoController extends Controller
             $WebpayPago = json_decode(json_encode($WebpayPago[0]));
             if($WebpayPago->estado_transaccion != 'ApprovedTransaction'){
 
+               /*
                $TV = TransactionValidation::where('TBK_ORDEN_COMPRA', '=',$WebpayPago->ord_compra)->get();
-
                if(count($TV)>0){
                   $TV[0]->delete();
                }
-
                $TransactionValidation = new TransactionValidation();
 
                $TransactionValidation->TBK_MONTO = $request->TBK_MONTO;
@@ -58,6 +57,8 @@ class CelmediaPagoController extends Controller
                $TransactionValidation->save();
 
                return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
+               */
+               return view('webpay.webpayValidations.TransactionAlreadyProcessed', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
             }else{
 
 
