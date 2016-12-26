@@ -60,7 +60,7 @@
     <div class="title">CelmediaPago</div>
 
     <div class="sub-title">
-      Estimado cliente le informamos que se encuentra con un canje pendiente, por favor espere que su canje sea aprovado y vuelva a intentar más tarde.<br>
+      Estimado cliente le informamos que se encuentra con un canje pendiente, por favor espere que su canje sea aprobado y vuelva a intentar más tarde.<br>
 
       {{-- <a href="http://ecorpbancadesa.celmedia.cl/" class="btn btn-primary">Volver</a> --}}
 

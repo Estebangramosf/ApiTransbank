@@ -61,9 +61,9 @@ class WebpayController extends Controller
         /** Iniciamos Transaccion */
 
 
-        //dd($request);
+        dd($request);
         $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
-        //dd($result);
+        dd($result);
 
 
         //Guardamos el token para despues actualizar con el resto de la información
@@ -101,9 +101,9 @@ class WebpayController extends Controller
 
         $wp = $this->setParametersForTransbankTransactions();
 
-        //dd($request);
+        dd($request);
         $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-        //dd($result);
+        dd($result);
 
         //Desde acá filtrar el response code
 
@@ -305,7 +305,7 @@ class WebpayController extends Controller
           "private_key" => "
 
 -----BEGIN RSA PRIVATE KEY-----
-MIIEpQIBAAKCAQEA0ClVcH8RC1u+KpCPUnzYSIcmyXI87REsBkQzaA1QJe4w/B7g
+
 6KvKV9DaqfnNhMvd9/ypmGf0RDQPhlBbGlzymKz1xh0lQBD+9MZrg8Ju8/d1k0pI
 b1QLQDnhRgR2T14ngXpP4PIQKtq7DsdHBybFU5vvAKVqdHvImZFzqexbZjXWxxhT
 +/sGcD4Vs673fc6B+Xj2UrKF7QyV5pMDq0HCCLTMmafWAmNrHyl6imQM+bqC12gn

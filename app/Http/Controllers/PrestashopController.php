@@ -32,10 +32,10 @@ class PrestashopController extends Controller
 
    private $returnProducts=[];
 
-   public function prestashopGetProductsDetails(){
+   public function prestashopGetProductsDetails($cart_id){
       try{
 
-         $this->opt = ['resource' => 'carts', 'filter[id]' => 231, 'display' => 'full'];
+         $this->opt = ['resource' => 'carts', 'filter[id]' => $cart_id, 'display' => 'full'];
          $this->xml = Prestashop::get($this->opt);
          $this->products = $this->xml->children()->children()->children()->associations->children()->cart_rows->children();
 
@@ -54,7 +54,7 @@ class PrestashopController extends Controller
             'prices'=>$this->productPrices,
          ]));
 
-         return dd($this->returnProducts);
+         return $this->returnProducts;
       }catch(Exception $e){
          return dd($e);
       }

@@ -270,9 +270,12 @@ class CelmediaPagoController extends Controller
         SoapWrapper::add(function ($service) {
           $service
             ->name('ConfirmaCanje')
-            ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop/wscl/wsclotpc_server_ps.php?wsdl')
+            ->wsdl('http://190.196.23.184/clop_otpc_web_prestashop_desa/wscl/wsclotpc_server_ps.php?wsdl')
             ->trace(true);
         });
+
+         $psc = new PrestashopController();
+         $result = $psc->prestashopGetProductsDetails($ordenCompraCarrito);
 
         $data = [
           'usuario'=>'celmediapago',
@@ -282,17 +285,22 @@ class CelmediaPagoController extends Controller
           //'rut'=>'180025553',//$rut,
           'rut'=>$rut,//$rut,
           'origen'=>'PRUEBAS_JCH',
-          'monto'=>$monto,
+          'monto'=>$monto, //acá van los montos concatenados
+          //'monto'=>$result->prices, //acá van los montos concatenados
           'copago'=>$copago,
           'uni_canje'=>'0',
-          'descripcion'=>'Canje de Prueba JCH',
-          'cod_prod_prov'=>'COD001',
+          //'descripcion'=>'Canje de Prueba JCH', //acá van los nombres concatenados
+          'descripcion'=>$result->names, //acá van los nombres concatenados
+          //'cod_prod_prov'=>'COD001', //acá van los códigos concatenados
+          'cod_prod_prov'=>$result->references, //acá van los códigos concatenados
           'id_grupo'=>'10',
           'id_categoria'=>'36',
           'id_subcategoria'=>'187',
           'hash_otpc'=>$otpc,
           'tdv_otpc'=>'31',
         ];
+
+
 
          //Consumir webserice de prestashop y concatenarlos
          //Crear funcion que trae productos concatenados
@@ -304,6 +312,7 @@ class CelmediaPagoController extends Controller
 
 
           $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
+           //dd($Result);
           if($Result->RC == '227'){
 
             return view('webpay.canjePendiente');

@@ -17,5 +17,9 @@
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-    Header set Access-Control-Allow-Origin "*"
+    Header add Access-Control-Allow-Origin "*"
+        #RewriteRule ^/api(.*)\.json$ /api$1.json [CORS=True]
+        #Header set Access-Control-Allow-Origin "*" env=CORS
+        #Header set Access-Control-Allow-Methods "GET" env=CORS
+        #Header set Access-Control-Allow-Credentials "false" env=CORS
 </IfModule>
