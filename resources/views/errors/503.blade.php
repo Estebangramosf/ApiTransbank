@@ -35,12 +35,22 @@
                 font-size: 72px;
                 margin-bottom: 40px;
             }
+            .sub-title {
+                font-size: 46px;
+                margin-bottom: 40px;
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="content">
                 <div class="title">Be right back.</div>
+                @if(isset($urlerror))
+                    <div class="sub-title">
+                        ¿Dónde vas? <br> Lo sentimos, esta dirección no existe <br>
+                        <strong>{{$urlerror}}</strong>
+                    </div>
+                @endif
             </div>
         </div>
     </body>

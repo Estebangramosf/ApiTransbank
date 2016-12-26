@@ -10,7 +10,15 @@
 | and give it the controller to call when that URI is requested.
 |
 */
+/*
+Route::any('{all}', function(){
+    return 'It Works';
+})->where('all', '.*');
+*/
 
+Route::any('/', function(){
+    return 'It Works';
+});
 
 Route::post('validateCorpbancaCard', 'WebserviceController@validateCorpbancaCard');
 
