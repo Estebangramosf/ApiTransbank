@@ -60,7 +60,6 @@ class WebpayController extends Controller
          $WebpayPago->save();
          //Enviamos a la vista el objeto resultante con la informacion para ser POSTeada hacia el ecommerce
          return view('webpay.index', ['result' => $result]);
-
       } catch (Exception $e) {
          return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $bO, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }

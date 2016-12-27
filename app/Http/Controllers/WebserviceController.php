@@ -29,7 +29,7 @@ class WebserviceController extends Controller
             $data = [
                'usuario'=>$this->ConfigController->WebServiceUserCelPago,
                'password'=>$this->ConfigController->WebServicePasswordCelPago,
-               'cardnumber'=>$request->digito,
+               'cardnumber'=>$request->digito,//172161
             ];
             // Se usa el nuevo webservice creado
             SoapWrapper::service('currency', function ($service) use ($data) {
