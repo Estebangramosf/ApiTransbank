@@ -58,7 +58,7 @@
    <div class="content">
       <div class="title">Certificados Inválidos</div>
       <div class="sub-title">Estimado cliente, ocurrió un error en la verificación de los certificados de Webpay.</div>
-      <form id="form1" name="form1" method="post" action="http://ecorpbancadesa.celmedia.cl/fracaso">
+      <form id="form1" name="form1" method="post" action="{{$urlFracaso}}">
          <input type="hidden" name="status_error" value="1">
          <input type="hidden" name="TBK_ORDEN_COMPRA" value="{{$TBK_ORDEN_COMPRA}}">
          <input type="hidden" name="message_error" value="Transacción Rechazada por Error en Certificados">

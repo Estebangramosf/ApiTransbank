@@ -73,7 +73,7 @@
       </div>
 
       <span id="reddirect">Redireccionando en </span>
-      <form id="form1" name="form1" method="post" action="http://ecorpbancadesa.celmedia.cl/">
+      <form id="form1" name="form1" method="post" action="{{$ecommerceHomeUrl}}">
       </form>
 
       <script>

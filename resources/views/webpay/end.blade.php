@@ -70,7 +70,7 @@
       </div>
 
       <span id="reddirect">Redireccionando en </span>
-      <form id="form1" name="form1" method="post" action="http://ecorpbancadesa.celmedia.cl/fracaso">
+      <form id="form1" name="form1" method="post" action="{{$urlFracaso}}">
         <!-- Verificar si aqui tengo que enviar algun parametro por posteo, verificar tambien la url -->
 
         <input type="hidden" name="status_error" value="1">

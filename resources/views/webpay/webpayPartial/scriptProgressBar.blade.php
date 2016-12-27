@@ -2,7 +2,6 @@
 Vistas que comparten este módulo + script
   canjePendiente.blade.php
   end.blade.php
-  exito.blade.php
   responseCanjeSiTransbank.blade.php
 
 Y ahora todas las subvistas de la carpeta -> webpayResponseErrors
