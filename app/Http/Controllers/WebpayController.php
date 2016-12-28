@@ -7,7 +7,7 @@ use App\WebpayPago;
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 use Exception;
 use Illuminate\Http\Request;
-
+use Carbon\Carbon;
 use App\Http\Requests;
 use App\Libraries\libwebpay\webpay;
 use App\Libraries\libwebpay\configuration;
@@ -19,10 +19,12 @@ class WebpayController extends Controller
    private $webpay_config;
    private $webpay_certificate;
    private $ConfigController;
+   private $LogController;
 
    public function __construct()
    {
       $this->ConfigController = new ConfigController();
+      $this->LogController = new LogController();
    }
 
    public function initTransaction($a, $bO, $sId)
@@ -47,9 +49,23 @@ class WebpayController extends Controller
             "urlFinal" => $urlFinal,
          );
          /** Iniciamos Transaccion */
+
          //dd($request);
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
          //dd($result);
+         // Write the contents of a file
+
+         /*
+         Acá está el código para guardar ficheros, en caso que transabank solicite los logs,
+         lo que falta es que se pueda agregar al mismo archivo el resto de los casos,
+         una forma de manejarlo es guardar la ruta del archivo en un campo y llamar la ruta
+         para sobreescribir la información.
+
+         $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
+         $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
+         $file = \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_NameFunction.log', json_encode($result));
+         */
+
          //Guardamos el token para despues actualizar con el resto de la información
          $WebpayPago = new WebpayPago();
          $WebpayPago->pago_id = $bO;

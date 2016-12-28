@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\HistorialCanje;
 use App\TransactionValidation;
 use App\WebpayPago;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use App\Http\Requests;
@@ -18,17 +19,20 @@ class CelmediaPagoController extends Controller
    private $WebserviceController;
    private $WebpayController;
    private $ConfigController;
+   private $LogController;
 
    public function __construct()
    {
       $this->WebserviceController = new WebserviceController();
       $this->WebpayController = new WebpayController();
       $this->ConfigController = new ConfigController();
+      $this->LogController = new LogController();
    }
 
    public function getShoppingCart(Request $request)
    {
       try {
+
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
          //Filtro cuando se ingresa una transacción ya registrada
          if (count($WebpayPago) > 0) {

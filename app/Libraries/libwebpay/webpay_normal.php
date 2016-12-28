@@ -2,6 +2,7 @@
 
 namespace App\Libraries\libwebpay;
 
+use App\Http\Controllers\LogController;
 use DOMDocument;
 use Exception;
 use Illuminate\Support\Facades\Redirect;
@@ -321,7 +322,11 @@ class WebPayNormal {
             $getTransactionResult = new getTransactionResult();
 
             $getTransactionResult->tokenInput = $token;
+
+            $this->LogController = new LogController();
             //dd($getTransactionResult);
+
+
             $getTransactionResultResponse = $this->_getTransactionResult($getTransactionResult);
 
             /** Validación de firma del requerimiento de respuesta enviado por Webpay */
