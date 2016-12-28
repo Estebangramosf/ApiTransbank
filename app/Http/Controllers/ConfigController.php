@@ -67,6 +67,7 @@ class ConfigController extends Controller
         $this->urlFinal = "http://192.168.1.192/end";
         $this->urlFracaso = "http://ecorpbancadesa.celmedia.cl/fracaso";
         $this->urlExito = "http://ecorpbancadesa.celmedia.cl/module/celmediapago/validation";
+        $this->urlApi = "http://dev.apitransbank.com";
 
         /* Celmedia Pago */
         $this->WebServiceUserCelPago = 'celmediapago';

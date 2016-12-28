@@ -1,4 +1,4 @@
-<form id="form1" name="form1" method="post" action="http://ecorpbancadesa.celmedia.cl/module/celmediapago/validation" autocomplete="off"  onSubmit="">
+<form id="form1" name="form1" method="post" action="{{$urlExito}}" autocomplete="off"  onSubmit="">
   <input type="hidden" name="CELPAGO_TBK_OC" value="{{$historial->ordenCompraCarrito}}">
   <input type="hidden" name="CELPAGO_TBK_MONTO" value="0">
   <input type="hidden" name="CELPAGO_ID_CART" value="{{$historial->ordenCompraCarrito}}">

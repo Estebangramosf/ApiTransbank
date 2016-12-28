@@ -69,7 +69,7 @@
          </span>
          <br>
 
-         <form id="form1" name="form1" method="post" action="http://192.168.1.192/celmediaPagoInit" autocomplete="off"  onSubmit="">
+         <form id="form1" name="form1" method="post" action="{{$urlApi}}/celmediaPagoInit" autocomplete="off"  onSubmit="">
             <input type="hidden" name="TBK_ORDEN_COMPRA" value="{{$TBK_ORDEN_COMPRA}}">
             {{csrf_field()}}
             <button type="submit" class="btn btn-success btn-lg"><b>Continuar ...</b></button>

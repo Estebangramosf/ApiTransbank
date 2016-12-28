@@ -51,7 +51,7 @@ class CelmediaPagoController extends Controller
                $TransactionValidation->TRANSACTION_STATUS = $WebpayPago->estado_transaccion;
                $TransactionValidation->save();
 
-               return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA]);
+               return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlApi' => $this->ConfigController->urlApi]);
                */
                return view('webpay.webpayValidations.TransactionAlreadyProcessed', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'ecommerceHomeUrl'=>$this->ConfigController->ecommerceHomeUrl]);
             } else {
