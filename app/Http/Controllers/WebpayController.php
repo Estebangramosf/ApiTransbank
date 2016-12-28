@@ -64,6 +64,15 @@ class WebpayController extends Controller
          $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
          $file = \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_NameFunction.log', json_encode($result));
+
+         Para sobre escribir o agregar al archivo
+         
+         $bytesWritten = File::append($filename, $content);
+         if ($bytesWritten === false)
+         {
+             die("Couldn't write to the file.");
+         }
+
          */
 
          //Guardamos el token para despues actualizar con el resto de la información
