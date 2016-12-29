@@ -141,7 +141,7 @@ class CelmediaPagoController extends Controller
             //Obtiene la informacion del cliente, si no existe lo registra, si existe, actualiza los puntos desde WS
             $this->ConsultaPuntosWSCLOTPC($request->TBK_RUT);
             //Se busca al usuario en la base de datos local
-            $user = User::where('rut', (int)$request->TBK_RUT)->get();
+            $user = User::where('rut', $request->TBK_RUT)->get();
             //se verifica si existe y lo guarda en una veriable
             if (isset($user[0])) {
                return json_decode(json_encode($user[0]));
@@ -187,7 +187,8 @@ class CelmediaPagoController extends Controller
          SoapWrapper::service('currency', function ($service) use ($data) {
             $ClientData = $service->call('ConsultaPuntosWSCLOTPC', [$data]);
             //Se busca al usuario en la base de datos local
-            $user = User::where('rut', (int)$ClientData->rut)->get();
+            $user = User::where('rut', $ClientData->rut)->get();
+
             //se verifica si existe y lo guarda en una veriable
             if (isset($user[0])) {
                $user = json_decode(json_encode($user[0]));

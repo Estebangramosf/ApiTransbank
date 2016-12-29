@@ -43,7 +43,9 @@ class PrestashopController extends Controller
             $this->opt = ['resource' => 'products', 'display' => 'full', 'filter[id]' => (int)$product->id_product];
             $this->productDetailed = Prestashop::get($this->opt);
 
-            $this->productNames .= (string)$this->productDetailed->products->product->meta_description->language . ' | '; //Nombre
+            //DEPRECATED
+            //$this->productNames .= (string)$this->productDetailed->products->product->meta_description->language . ' | '; //Nombre
+            $this->productNames .= (string)$this->productDetailed->products->product->name->language . ' | '; //Nombre
             $this->productReferences .= (string)$this->productDetailed->products->product->reference . ' | '; //Referencia
             $this->productPrices .= (int)$this->productDetailed->products->product->price . ' | '; //Puntos
          }
