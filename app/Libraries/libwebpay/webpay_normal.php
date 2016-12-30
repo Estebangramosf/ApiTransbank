@@ -3,6 +3,7 @@
 namespace App\Libraries\libwebpay;
 
 use App\Http\Controllers\LogController;
+use Carbon\Carbon;
 use DOMDocument;
 use Exception;
 use Illuminate\Support\Facades\Redirect;
@@ -325,6 +326,9 @@ class WebPayNormal {
 
             $this->LogController = new LogController();
             //dd($getTransactionResult);
+            $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
+            $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
+            \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultRequest.log', json_encode($getTransactionResult));
 
 
             $getTransactionResultResponse = $this->_getTransactionResult($getTransactionResult);

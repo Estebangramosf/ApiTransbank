@@ -50,8 +50,14 @@ class WebpayController extends Controller
          );
          /** Iniciamos Transaccion */
 
+         $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
+         $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
          //dd($request);
+
+         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionRequest.log', json_encode($request));
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
+         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionResult.log', json_encode($result));
+         //\Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionResult.log', json_encode($result));
          //dd($result);
          // Write the contents of a file
 
@@ -60,20 +66,20 @@ class WebpayController extends Controller
          lo que falta es que se pueda agregar al mismo archivo el resto de los casos,
          una forma de manejarlo es guardar la ruta del archivo en un campo y llamar la ruta
          para sobreescribir la información.
+         */
 
-         $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
-         $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-         $file = \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_NameFunction.log', json_encode($result));
 
-         Para sobre escribir o agregar al archivo
-         
+
+
+         /* Para sobre escribir o agregar al archivo */
+         /*
          $bytesWritten = File::append($filename, $content);
          if ($bytesWritten === false)
          {
              die("Couldn't write to the file.");
          }
-
          */
+
 
          //Guardamos el token para despues actualizar con el resto de la información
          $WebpayPago = new WebpayPago();
@@ -110,7 +116,11 @@ class WebpayController extends Controller
       try {
          $wp = $this->setParametersForTransbankTransactions();
          //dd($request);
+         $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
+         $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
+         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultRequest.log', json_encode($request));
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultResult.log', json_encode($result));
          //dd($result);
          //Desde acá filtrar el response code
          switch ($result->detailOutput->responseCode) {
