@@ -113,6 +113,7 @@ class CelmediaPagoController extends Controller
             $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
             if (count($historial) > 0) {
                $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
+               $historial = HistorialCanje::where('estado', 'canjeado')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
                $historial = json_decode(json_encode($historial[0]));
                return view('webpay.responseCanjeNoTransbank', ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
             }
