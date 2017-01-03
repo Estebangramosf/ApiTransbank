@@ -54,9 +54,9 @@ class WebpayController extends Controller
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
          //dd($request);
 
-         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionRequest.log', json_encode($request));
+         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($request));
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
-         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionResult.log', json_encode($result));
+         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($result));
          //\Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionResult.log', json_encode($result));
          //dd($result);
          // Write the contents of a file
@@ -118,9 +118,9 @@ class WebpayController extends Controller
          //dd($request);
          $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultRequest.log', json_encode($request));
+         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($request));
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-         \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultResult.log', json_encode($result));
+         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($result));
          //dd($result);
          //Desde acá filtrar el response code
          switch ($result->detailOutput->responseCode) {
