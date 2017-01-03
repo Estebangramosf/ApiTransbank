@@ -100,10 +100,19 @@ class CelmediaPagoController extends Controller
          if ($userResult->pts >= $request->TBK_MONTO) {
             //Se genera el canje y solicitud de canje
 
-            $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
+
+            if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get()) == 0) {
+               HistorialCanje::create([
+                  'user_rut' => $request->TBK_RUT,
+                  'fecha_canje' => Carbon::now(),
+                  'ordenCompraCarrito' => $request->TBK_ORDEN_COMPRA,
+                  'estado' => 'encanje',
+               ])->save();
+            }
 
             $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
             if (count($historial) > 0) {
+               $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
                $historial = json_decode(json_encode($historial[0]));
                return view('webpay.responseCanjeNoTransbank', ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
             }
@@ -260,7 +269,21 @@ class CelmediaPagoController extends Controller
             if ($Result->RC == '227') {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
-            if (count(HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get()) == 0) {
+            /*
+             * Aqui despues se reemplazan con los campos faltantes */
+            if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get()) > 0) {
+
+               $historial[0]->user_rut = $Result->rut;
+               $historial[0]->rc = $Result->RC;
+               $historial[0]->fecha_canje = $Result->fecha_canje;
+               $historial[0]->id_transaccion = $Result->id_transaccion;
+               $historial[0]->saldo_final = $Result->saldo_final;
+               $historial[0]->puntos = $Result->puntos;
+               $historial[0]->copago = $data['copago'];
+               $historial[0]->ordenCompraCarrito = $ordenCompraCarrito;
+               $historial[0]->estado = 'canjeado';
+               $historial[0]->save();
+               /*
                HistorialCanje::create([
                   'user_rut' => $Result->rut,
                   'rc' => $Result->RC,
@@ -270,8 +293,10 @@ class CelmediaPagoController extends Controller
                   'puntos' => $Result->puntos,
                   'copago' => $data['copago'],
                   'ordenCompraCarrito' => $ordenCompraCarrito,
-                  'estado' => 'encanje',
+                  'estado' => 'canjeado',
                ])->save();
+               */
+
                return true;
             } else {
                return true;
