@@ -70,7 +70,10 @@
          </div>
 
          <span id="reddirect">Redireccionando en </span>
-         <form id="form1" name="form1" method="get" action="{{$ecommerceHomeUrl}}">
+         <form id="form1" name="form1" method="get" action="{{$urlFracaso}}">
+            <input type="hidden" name="status_error" value="1">
+            <input type="hidden" name="TBK_ORDEN_COMPRA" value="{{$TBK_ORDEN_COMPRA}}">
+            <input type="hidden" name="message_error" value="Transacción ya Aprobada">
          </form>
 
 

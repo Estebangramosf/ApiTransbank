@@ -57,9 +57,9 @@ class CelmediaPagoController extends Controller
 
                return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlApi' => $this->ConfigController->urlApi]);
                */
-               return view('webpay.webpayValidations.TransactionAlreadyProcessed', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'ecommerceHomeUrl'=>$this->ConfigController->ecommerceHomeUrl]);
+               return view('webpay.webpayValidations.TransactionAlreadyProcessed', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } else {
-               return view('webpay.webpayValidations.TransactionAlreadyApproved', ['ecommerceHomeUrl'=>$this->ConfigController->ecommerceHomeUrl]);
+               return view('webpay.webpayValidations.TransactionAlreadyApproved', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA,'urlFracaso'=>$this->ConfigController->urlFracaso]);
             }
          } else {
             return $this->celmediaPagoPostInit($request);
@@ -78,7 +78,7 @@ class CelmediaPagoController extends Controller
             $request = json_decode(json_encode($request[0]));
          }
          if ($request->TRANSACTION_STATUS == 'ApprovedTransaction') {
-            return view('webpay.webpayValidations.TransactionAlreadyApproved',['ecommerceHomeUrl'=>$this->ConfigController->ecommerceHomeUrl]);
+            return view('webpay.webpayValidations.TransactionAlreadyApproved',['urlFracaso'=>$this->ConfigController->urlFracaso]);
          }
          $WebpayPagoOld = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
          if (count($WebpayPagoOld) > 0) {
@@ -99,7 +99,9 @@ class CelmediaPagoController extends Controller
          $request->TBK_MONTO = round($request->TBK_MONTO, 0);
          if ($userResult->pts >= $request->TBK_MONTO) {
             //Se genera el canje y solicitud de canje
+
             $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
+
             $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
             if (count($historial) > 0) {
                $historial = json_decode(json_encode($historial[0]));
