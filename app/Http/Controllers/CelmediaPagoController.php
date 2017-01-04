@@ -32,16 +32,14 @@ class CelmediaPagoController extends Controller
    public function getShoppingCart(Request $request)
    {
       try {
-
-         $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
+         $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
          //Filtro cuando se ingresa una transacción ya registrada
          if (count($WebpayPago) > 0) {
-            $WebpayPago = json_decode(json_encode($WebpayPago[0]));
             if ($WebpayPago->estado_transaccion != 'ApprovedTransaction') {
 
-               $TV = TransactionValidation::where('TBK_ORDEN_COMPRA', '=',$WebpayPago->ord_compra)->get();
+               $TV = TransactionValidation::where('TBK_ORDEN_COMPRA', '=',$WebpayPago->ord_compra)->first();
                if(count($TV)>0){
-                  $TV[0]->delete();
+                  $TV->delete();
                }
                $TransactionValidation = new TransactionValidation();
 
@@ -55,38 +53,41 @@ class CelmediaPagoController extends Controller
                $TransactionValidation->TRANSACTION_STATUS = $WebpayPago->estado_transaccion;
                $TransactionValidation->save();
 
-               return view('webpay.webpayValidations.AuthTransaction', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlApi' => $this->ConfigController->urlApi]);
+               return view('webpay.webpayValidations.AuthTransaction',
+                  ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlApi' => $this->ConfigController->urlApi]);
                /**/
-               return view('webpay.webpayValidations.TransactionAlreadyProcessed', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+               //return view('webpay.webpayValidations.TransactionAlreadyProcessed',
+               //['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } else {
-               return view('webpay.webpayValidations.TransactionAlreadyApproved', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA,'urlFracaso'=>$this->ConfigController->urlFracaso]);
+               return view('webpay.webpayValidations.TransactionAlreadyApproved',
+                  ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA,'urlFracaso'=>$this->ConfigController->urlFracaso]);
             }
          } else {
             return $this->celmediaPagoPostInit($request);
          }
       } catch (Exception $e) {
          //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
-         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.webpayResponseErrors.invalidWebpayCert',
+            ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
 
    }//End function getShoppingCart()
    public function celmediaPagoInit(Request $request)
    {
       try {
-         $request = TransactionValidation::where('TBK_ORDEN_COMPRA', '=', $request->TBK_ORDEN_COMPRA)->get();
-         if (count($request) > 0) {
-            $request = json_decode(json_encode($request[0]));
-         }
+         $request = TransactionValidation::where('TBK_ORDEN_COMPRA', '=', $request->TBK_ORDEN_COMPRA)->first();
          if ($request->TRANSACTION_STATUS == 'ApprovedTransaction') {
-            return view('webpay.webpayValidations.TransactionAlreadyApproved',['urlFracaso'=>$this->ConfigController->urlFracaso]);
+            return view('webpay.webpayValidations.TransactionAlreadyApproved',
+               ['urlFracaso'=>$this->ConfigController->urlFracaso]);
          }
-         $WebpayPagoOld = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->get();
+         $WebpayPagoOld = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
          if (count($WebpayPagoOld) > 0) {
-            $WebpayPagoOld[0]->delete();
+            $WebpayPagoOld->delete();
          }
          return $this->celmediaPagoPostInit($request);
       } catch (Exception $e) {
-         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.webpayResponseErrors.invalidWebpayCert',
+            ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
@@ -100,8 +101,7 @@ class CelmediaPagoController extends Controller
          if ($userResult->pts >= $request->TBK_MONTO) {
             //Se genera el canje y solicitud de canje
 
-
-            if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get()) == 0) {
+            if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
                HistorialCanje::create([
                   'user_rut' => $request->TBK_RUT,
                   'fecha_canje' => Carbon::now(),
@@ -110,14 +110,15 @@ class CelmediaPagoController extends Controller
                ])->save();
             }
 
-            $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
+            $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
             if (count($historial) > 0) {
                $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
-               $historial = HistorialCanje::where('estado', 'canjeado')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
-               $historial = json_decode(json_encode($historial[0]));
-               return view('webpay.responseCanjeNoTransbank', ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
+               $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
+
+               return view('webpay.responseCanjeNoTransbank',
+                  ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
             }
-            $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
+            $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
             //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if (count($historial) == 0) {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
@@ -125,9 +126,7 @@ class CelmediaPagoController extends Controller
          } else {
             $total = ($request->TBK_MONTO - $userResult->pts);
 
-
-
-            if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get()) == 0) {
+            if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
                HistorialCanje::create([
                   'user_rut' => $request->TBK_RUT,
                   'fecha_canje' => Carbon::now(),
@@ -137,19 +136,14 @@ class CelmediaPagoController extends Controller
                ])->save();
             }
 
-            $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
+            $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
 
             $result = '';
 
             if (count($historial) > 0) {
                $result = $this->WebpayController->initTransaction($total * 3, $request->TBK_ORDEN_COMPRA, $request->TBK_ID_SESION);
             }
-            /*
-            if($result->getName()=='webpay.index'){
-               //$this->generateSwap($request->TBK_RUT, $userResult->pts, $request->TBK_OTPC_WEB, ($total * 3), $request->TBK_ORDEN_COMPRA);
-            }
-            */
-            $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
+            $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
 
             //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if (count($historial) == 0) {
@@ -159,7 +153,8 @@ class CelmediaPagoController extends Controller
          }
       } catch (Exception $e) {
          //Aca se cae en la primera validación de error de certificados
-         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.webpayResponseErrors.invalidWebpayCert',
+            ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
@@ -173,10 +168,10 @@ class CelmediaPagoController extends Controller
             //Obtiene la informacion del cliente, si no existe lo registra, si existe, actualiza los puntos desde WS
             $this->ConsultaPuntosWSCLOTPC($request->TBK_RUT, $request->TBK_OTPC_WEB);
             //Se busca al usuario en la base de datos local
-            $user = User::where('rut', $request->TBK_RUT)->get();
+            $user = User::where('rut', $request->TBK_RUT)->first();
             //se verifica si existe y lo guarda en una veriable
-            if (isset($user[0])) {
-               return json_decode(json_encode($user[0]));
+            if (count($user)>0) {
+               return $user;
             } else {
                return Redirect::to($this->ConfigController->ecommerceHomeUrl);
             }
@@ -204,14 +199,6 @@ class CelmediaPagoController extends Controller
             'origen' => $this->ConfigController->WebServiceOrigenCelPago,
             'password' => $this->ConfigController->WebServicePasswordCelPago,
             'idproveedor' => $this->ConfigController->WebServiceIdProveedorCelPago
-            /*
-            DEPRECATED BY REPLACE
-            'rut' => $rut,
-            'usuario' => $this->ConfigController->WebServiceUser,
-            'origen' => $this->ConfigController->WebServiceOrigen,
-            'password' => $this->ConfigController->WebServicePassword,
-            'idproveedor' => $this->ConfigController->WebServiceIdProveedorl
-            */
          ];
 
 
@@ -219,12 +206,8 @@ class CelmediaPagoController extends Controller
          SoapWrapper::service('currency', function ($service) use ($data, $otpc) {
             $ClientData = $service->call('ConsultaPuntosWSCLOTPC', [$data]);
             //Se busca al usuario en la base de datos local
-            $user = User::where('rut', $ClientData->rut)->get();
+            $user = User::where('rut', $ClientData->rut)->first();
 
-            //se verifica si existe y lo guarda en una veriable
-            if (isset($user[0])) {
-               $user = json_decode(json_encode($user[0]));
-            }
             //Se verifica si el tiene rut válido
             if (isset($user->rut)) {
                //Se busca y actualizan los puntos del usuario, luego se guarda
@@ -243,18 +226,10 @@ class CelmediaPagoController extends Controller
                ])->save();
                return true;
             }
-            //dd($service->call('ConsultaPuntosWSCLOTPC', [$data]));
-            //var_dump($service->call('Otherfunction'));
          });
       } catch (Exception $e) {
       }
    }//End function ConsultaPuntosWSCLOTPC()
-
-   //$this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
-
-   //$this->generateSwap($request->TBK_RUT, $userResult->pts, $request->TBK_OTPC_WEB, ($total * 3), $request->TBK_ORDEN_COMPRA);
-
-   //$total = ($request->TBK_MONTO - $userResult->pts);
 
    public function generateSwap($rut, $monto, $otpc, $copago, $ordenCompraCarrito)
    {
@@ -273,17 +248,13 @@ class CelmediaPagoController extends Controller
             'usuario' => $this->ConfigController->WebServiceUserCelPago,
             'password' => $this->ConfigController->WebServicePasswordCelPago,
             'idproveedor' => $this->ConfigController->WebServiceIdProveedorCelPago,
-            //'rut'=>'171058902',//$rut,
-            //'rut'=>'180025553',//$rut,
             'rut' => $rut,//$rut,
             'origen' => $this->ConfigController->WebServiceOrigenCelPago,
             'monto' => $monto, //acá van los montos concatenados
             //'monto'=>$result->prices, //acá van los montos concatenados
             'copago' => $copago,
             'uni_canje' => $this->ConfigController->WebServiceUniCanjeCelPago,
-            //'descripcion'=>'Canje de Prueba JCH', //acá van los nombres concatenados
             'descripcion' => $result->names, //acá van los nombres concatenados
-            //'cod_prod_prov'=>'COD001', //acá van los códigos concatenados
             'cod_prod_prov' => $result->references, //acá van los códigos concatenados
             'id_grupo' => $this->ConfigController->WebServiceIdGrupoCelPago,
             'id_categoria' => $this->ConfigController->WebServiceIdCategoriaCelPago,
@@ -294,38 +265,23 @@ class CelmediaPagoController extends Controller
          // Se usa el nuevo webservice creado
          SoapWrapper::service('ConfirmaCanje', function ($service) use ($data, $ordenCompraCarrito) {
             $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
-            //dd($Result);
             if ($Result->RC == '227') {
-               return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
+               return view('webpay.canjePendiente',
+                  ['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
             /*
              * Aqui despues se reemplazan con los campos faltantes */
-            if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get()) > 0) {
-
-               $historial[0]->user_rut = $Result->rut;
-               $historial[0]->rc = $Result->RC;
-               $historial[0]->fecha_canje = $Result->fecha_canje;
-               $historial[0]->id_transaccion = $Result->id_transaccion;
-               $historial[0]->saldo_final = $Result->saldo_final;
-               $historial[0]->puntos = $Result->puntos;
-               $historial[0]->copago = $data['copago'];
-               $historial[0]->ordenCompraCarrito = $ordenCompraCarrito;
-               $historial[0]->estado = 'canjeado';
-               $historial[0]->save();
-               /*
-               HistorialCanje::create([
-                  'user_rut' => $Result->rut,
-                  'rc' => $Result->RC,
-                  'fecha_canje' => $Result->fecha_canje,
-                  'id_transaccion' => $Result->id_transaccion,
-                  'saldo_final' => $Result->saldo_final,
-                  'puntos' => $Result->puntos,
-                  'copago' => $data['copago'],
-                  'ordenCompraCarrito' => $ordenCompraCarrito,
-                  'estado' => 'canjeado',
-               ])->save();
-               */
-
+            if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->first()) > 0) {
+               $historial->user_rut = $Result->rut;
+               $historial->rc = $Result->RC;
+               $historial->fecha_canje = $Result->fecha_canje;
+               $historial->id_transaccion = $Result->id_transaccion;
+               $historial->saldo_final = $Result->saldo_final;
+               $historial->puntos = $Result->puntos;
+               $historial->copago = $data['copago'];
+               $historial->ordenCompraCarrito = $ordenCompraCarrito;
+               $historial->estado = 'canjeado';
+               $historial->save();
                return true;
             } else {
                return true;
