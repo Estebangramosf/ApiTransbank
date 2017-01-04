@@ -19,8 +19,6 @@
   <!-- Latest compiled and minified JavaScript -->
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-
-
   <style>
     html, body {
       height: 100%;
@@ -58,7 +56,7 @@
 <body>
 <div class="container">
   <div class="content">
-    <div class="title">Transacción anulada por el usuario</div>
+    <div class="title">Transacción anulada <br> por el usuario</div>
 
     <div class="sub-title">
       <span id="wait">Espere por favor . </span><br>

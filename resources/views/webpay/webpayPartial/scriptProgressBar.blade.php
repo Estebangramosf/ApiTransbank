@@ -33,7 +33,7 @@ Y ahora todas las subvistas de la carpeta -> webpayResponseErrors
     $(function () {
 
       var timeVisualReddirect = 5000;
-      var timeReddirect = 3000;
+      var timeReddirect = 6000;
 
       setInterval(function(){
         console.log('Redireccionando dentro de => '+(timeVisualReddirect/1000));

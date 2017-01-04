@@ -52,7 +52,7 @@
     }
 
     .sub-title {
-      font-size: 36px;
+      font-size: 26px;
     }
   </style>
 </head>
@@ -60,7 +60,15 @@
 <div class="container">
   <div class="content">
     <div class="title">Transacción Rechazada</div>
-    <div class="sub-title">Estimado cliente, la transacción fue rechazada por Transbank, intente más tarde con otro medio de pago o pongase en contacto con su proveedor.</div>
+    <div class="sub-title">
+      Estimado cliente, <br>
+      la transacción fue <br>
+      rechazada por Transbank, <br>
+      intente más tarde <br>
+      con otro medio de pago <br>
+      o pongase en contacto <br>
+      con su proveedor.
+    </div>
 
     <form id="form1" name="form1" method="post" action="{{$urlFracaso}}">
       <input type="hidden" name="status_error" value="1">

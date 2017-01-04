@@ -51,36 +51,11 @@ class WebpayController extends Controller
          );
          /** Iniciamos Transaccion */
 
-         $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-         //dd($request);
 
          \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($request));
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
          \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($result));
-         //\Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_InitTransactionResult.log', json_encode($result));
-         //dd($result);
-         // Write the contents of a file
-
-         /*
-         Acá está el código para guardar ficheros, en caso que transabank solicite los logs,
-         lo que falta es que se pueda agregar al mismo archivo el resto de los casos,
-         una forma de manejarlo es guardar la ruta del archivo en un campo y llamar la ruta
-         para sobreescribir la información.
-         */
-
-
-
-
-         /* Para sobre escribir o agregar al archivo */
-         /*
-         $bytesWritten = File::append($filename, $content);
-         if ($bytesWritten === false)
-         {
-             die("Couldn't write to the file.");
-         }
-         */
-
 
          //Guardamos el token para despues actualizar con el resto de la información
          $WebpayPago = new WebpayPago();
@@ -116,13 +91,10 @@ class WebpayController extends Controller
    {
       try {
          $wp = $this->setParametersForTransbankTransactions();
-         //dd($request);
-         $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
          \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($request));
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
          \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($result));
-         //dd($result);
          //Desde acá filtrar el response code
          switch ($result->detailOutput->responseCode) {
             case '0':
@@ -163,7 +135,7 @@ class WebpayController extends Controller
                break;
          }
          //traer los datos del carro $result->buyOrder
-         $historial = HistorialCanje::where('ordenCompraCarrito', $result->buyOrder)->get();
+         $historial = HistorialCanje::where('ordenCompraCarrito', $result->buyOrder)->first();
          if (count($historial) == 1) {
             return view('webpay.voucher', ['urlRedirection' => $result->urlRedirection, 'token' => $request->token_ws]);
          } else {
@@ -171,8 +143,7 @@ class WebpayController extends Controller
          }
       } catch (Exception $e) {
          //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
-         $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->get();
-         $WebpayPago = json_decode(json_encode($WebpayPago[0]));
+         $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->first();
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
          return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
@@ -181,9 +152,8 @@ class WebpayController extends Controller
    public function saveTransactionResult($token_ws, $result, $transactionStatus)
    {
       try {
-         $WebpayPago = WebpayPago::where('token_ws', $token_ws)->get();
-         $WebpayPago = $WebpayPago[0];
-         //dd($result);
+         $WebpayPago = WebpayPago::where('token_ws', $token_ws)->first();
+
          $WebpayPago->accounting_date = $result->accountingDate;
          $WebpayPago->ord_compra = $result->buyOrder;
          $WebpayPago->id_sesion = $result->sessionId;
@@ -216,10 +186,8 @@ class WebpayController extends Controller
          //Se llama la funcion que asigna los parametros necesarios de certificado y ambiente
          $wp = $this->setParametersForTransbankTransactions();
 
-         //dd($request);
          //Se hace la inicializacion de la transaccion por transbank
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-         //dd($result);
 
          //Valida que el resultado sea arreglo
          if (is_array($result)) {
@@ -232,67 +200,16 @@ class WebpayController extends Controller
                //Se procesa este caso
                $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
                //Se redirecciona a la pagina de rechazo
-               return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+               return view('webpay.end',
+                  ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } elseif (strpos($result->detail, '272', 15)) {
                //"Error de transaccion por Timeout";
                //Se aprobecha este error para verificar que la transacción no fue anulada
                //Se busca la información guardada en la base local mediante el token
-               $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->get();
-               $WebpayPago = $WebpayPago[0];
+               $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->first();
                //Se verifica si la transacción ya ha sido aprobada y se actualizan los demas parametros
                if ($WebpayPago->estado_transaccion == 'ApprovedTransaction') {
-                  $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->get();
-                  $historial = json_decode(json_encode($historial[0]));
-
-                  //dd($WebpayPago);
-                  /*
-                    #attributes: array:28 [▼
-                      "id" => 2
-                      "pago_id" => 442
-                      "monto_puntos" => 0
-                      "monto_dinero" => 40779
-                      "diferencia" => 0
-                      "estado_pago" => 0
-                      "ord_compra" => "442"
-                      "id_sesion" => "442"
-                      "fh_transaccion" => "2017-01-04"
-                      "token_ws" => "e27dfb5abf4f6c20c7efa09f9d48958a247cec1c9a94484a20cf22f672b7bafb"
-                      "accounting_date" => "0104"
-                      "card_detail" => ""
-                      "card_number" => "6623"
-                      "card_expiration_date" => ""
-                      "authorization_code" => "1213"
-                      "payment_type_code" => "VN"
-                      "response_code" => "0"
-                      "shares_amount" => ""
-                      "shares_number" => "0"
-                      "commerce_code" => "597020000541"
-                      "transaction_date" => "2017-01-04T09:43:24.127-03:00"
-                      "vci" => "TSY"
-                      "tp_transaction" => "TR_NORMAL_WS"
-                      "tpago" => "2017-01-04"
-                      "hora_pago" => "2017-01-04"
-                      "estado_transaccion" => "ApprovedTransaction"
-                      "created_at" => "2017-01-04 12:44:55"
-                      "updated_at" => "2017-01-04 12:45:29"
-                    ]
-                  */
-
-                  //dd($historial);
-                  /*
-                    +"id": 1
-                    +"user_rut": "180025553"
-                    +"rc": ""
-                    +"fecha_canje": "2017-01-03 22:09:58"
-                    +"id_transaccion": ""
-                    +"saldo_final": ""
-                    +"puntos": ""
-                    +"copago": ""
-                    +"ordenCompraCarrito": "440"
-                    +"estado": "encanje"
-                    +"created_at": "2017-01-03 22:09:58"
-                    +"updated_at": "2017-01-03 22:09:58"
-                  */
+                  $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
 
                   $user = User::where('rut', $historial->user_rut)->first();
                   $total = $historial->puntos - $user->pts;
@@ -340,17 +257,13 @@ class WebpayController extends Controller
             'usuario' => $this->ConfigController->WebServiceUserCelPago,
             'password' => $this->ConfigController->WebServicePasswordCelPago,
             'idproveedor' => $this->ConfigController->WebServiceIdProveedorCelPago,
-            //'rut'=>'171058902',//$rut,
-            //'rut'=>'180025553',//$rut,
             'rut' => $rut,//$rut,
             'origen' => $this->ConfigController->WebServiceOrigenCelPago,
             'monto' => $monto, //acá van los montos concatenados
             //'monto'=>$result->prices, //acá van los montos concatenados
             'copago' => $copago,
             'uni_canje' => $this->ConfigController->WebServiceUniCanjeCelPago,
-            //'descripcion'=>'Canje de Prueba JCH', //acá van los nombres concatenados
             'descripcion' => $result->names, //acá van los nombres concatenados
-            //'cod_prod_prov'=>'COD001', //acá van los códigos concatenados
             'cod_prod_prov' => $result->references, //acá van los códigos concatenados
             'id_grupo' => $this->ConfigController->WebServiceIdGrupoCelPago,
             'id_categoria' => $this->ConfigController->WebServiceIdCategoriaCelPago,
@@ -361,38 +274,22 @@ class WebpayController extends Controller
          // Se usa el nuevo webservice creado
          SoapWrapper::service('ConfirmaCanje', function ($service) use ($data, $ordenCompraCarrito) {
             $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
-            //dd($Result);
             if ($Result->RC == '227') {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
-            /*
-             * Aqui despues se reemplazan con los campos faltantes */
-            if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get()) > 0) {
+            /* Aqui despues se reemplazan con los campos faltantes */
+            if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->first()) > 0) {
 
-
-               $historial[0]->user_rut = $Result->rut;
-               $historial[0]->rc = $Result->RC;
-               $historial[0]->fecha_canje = $Result->fecha_canje;
-               $historial[0]->id_transaccion = $Result->id_transaccion;
-               $historial[0]->saldo_final = $Result->saldo_final;
-               $historial[0]->puntos = $Result->puntos;
-               $historial[0]->copago = $data['copago'];
-               $historial[0]->ordenCompraCarrito = $ordenCompraCarrito;
-               $historial[0]->estado = 'canjeado';
-               $historial[0]->save();
-               /*
-               HistorialCanje::create([
-                  'user_rut' => $Result->rut,
-                  'rc' => $Result->RC,
-                  'fecha_canje' => $Result->fecha_canje,
-                  'id_transaccion' => $Result->id_transaccion,
-                  'saldo_final' => $Result->saldo_final,
-                  'puntos' => $Result->puntos,
-                  'copago' => $data['copago'],
-                  'ordenCompraCarrito' => $ordenCompraCarrito,
-                  'estado' => 'canjeado',
-               ])->save();
-               */
+               $historial->user_rut = $Result->rut;
+               $historial->rc = $Result->RC;
+               $historial->fecha_canje = $Result->fecha_canje;
+               $historial->id_transaccion = $Result->id_transaccion;
+               $historial->saldo_final = $Result->saldo_final;
+               $historial->puntos = $Result->puntos;
+               $historial->copago = $data['copago'];
+               $historial->ordenCompraCarrito = $ordenCompraCarrito;
+               $historial->estado = 'canjeado';
+               $historial->save();
 
                return true;
             } else {
@@ -406,12 +303,12 @@ class WebpayController extends Controller
    public function procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA)
    {
       try {
-         $historial = HistorialCanje::select('user_rut')->where('ordenCompraCarrito', $TBK_ORDEN_COMPRA)->get();
-         $historial = $historial[0];
+         $historial = HistorialCanje::select('user_rut')->where('ordenCompraCarrito', $TBK_ORDEN_COMPRA)->first();
          $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
       } catch (Exception $e) {
          $this->procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA);
-         return view('webpay.end', ['TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.end',
+            ['TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
