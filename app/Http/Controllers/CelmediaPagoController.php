@@ -124,13 +124,33 @@ class CelmediaPagoController extends Controller
             }
          } else {
             $total = ($request->TBK_MONTO - $userResult->pts);
-            $this->generateSwap($request->TBK_RUT, $userResult->pts, $request->TBK_OTPC_WEB, ($total * 3), $request->TBK_ORDEN_COMPRA);
+
+
+
+            if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get()) == 0) {
+               HistorialCanje::create([
+                  'user_rut' => $request->TBK_RUT,
+                  'fecha_canje' => Carbon::now(),
+                  'puntos' => $request->TBK_MONTO,
+                  'ordenCompraCarrito' => $request->TBK_ORDEN_COMPRA,
+                  'estado' => 'encanje',
+               ])->save();
+            }
+
             $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
+
             $result = '';
+
             if (count($historial) > 0) {
                $result = $this->WebpayController->initTransaction($total * 3, $request->TBK_ORDEN_COMPRA, $request->TBK_ID_SESION);
             }
+            /*
+            if($result->getName()=='webpay.index'){
+               //$this->generateSwap($request->TBK_RUT, $userResult->pts, $request->TBK_OTPC_WEB, ($total * 3), $request->TBK_ORDEN_COMPRA);
+            }
+            */
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->get();
+
             //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if (count($historial) == 0) {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
@@ -151,7 +171,7 @@ class CelmediaPagoController extends Controller
       try {
          if ($request->TBK_RUT && isset($request->TBK_RUT)) {
             //Obtiene la informacion del cliente, si no existe lo registra, si existe, actualiza los puntos desde WS
-            $this->ConsultaPuntosWSCLOTPC($request->TBK_RUT);
+            $this->ConsultaPuntosWSCLOTPC($request->TBK_RUT, $request->TBK_OTPC_WEB);
             //Se busca al usuario en la base de datos local
             $user = User::where('rut', $request->TBK_RUT)->get();
             //se verifica si existe y lo guarda en una veriable
@@ -166,7 +186,7 @@ class CelmediaPagoController extends Controller
    }//End function verifyRUTExistanceAndGetUser()
 
    //Funcion que verifica los puntos de un cliente y registra al usuario en caso que no exista en la base CelmediaPago
-   public function ConsultaPuntosWSCLOTPC($rut)
+   public function ConsultaPuntosWSCLOTPC($rut, $otpc)
    {
       //Se asegura en caso de caidas
       try {
@@ -196,7 +216,7 @@ class CelmediaPagoController extends Controller
 
 
          // Se usa el nuevo webservice creado
-         SoapWrapper::service('currency', function ($service) use ($data) {
+         SoapWrapper::service('currency', function ($service) use ($data, $otpc) {
             $ClientData = $service->call('ConsultaPuntosWSCLOTPC', [$data]);
             //Se busca al usuario en la base de datos local
             $user = User::where('rut', $ClientData->rut)->get();
@@ -210,6 +230,7 @@ class CelmediaPagoController extends Controller
                //Se busca y actualizan los puntos del usuario, luego se guarda
                $user = User::findOrFail($user->id);
                $user->pts = $ClientData->SaldoPuntos;//30000;//
+               $user->otpc = $otpc;
                $user->save();
                return true;
             } else {
@@ -217,7 +238,8 @@ class CelmediaPagoController extends Controller
                User::create([
                   'name' => $ClientData->Nombre,
                   'rut' => $ClientData->rut,
-                  'pts' => $ClientData->SaldoPuntos
+                  'pts' => $ClientData->SaldoPuntos,
+                  'otpc' => $otpc
                ])->save();
                return true;
             }
@@ -227,6 +249,12 @@ class CelmediaPagoController extends Controller
       } catch (Exception $e) {
       }
    }//End function ConsultaPuntosWSCLOTPC()
+
+   //$this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
+
+   //$this->generateSwap($request->TBK_RUT, $userResult->pts, $request->TBK_OTPC_WEB, ($total * 3), $request->TBK_ORDEN_COMPRA);
+
+   //$total = ($request->TBK_MONTO - $userResult->pts);
 
    public function generateSwap($rut, $monto, $otpc, $copago, $ordenCompraCarrito)
    {

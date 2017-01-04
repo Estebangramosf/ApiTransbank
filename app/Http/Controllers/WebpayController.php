@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\HistorialCanje;
+use App\User;
 use App\WebpayPago;
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 use Exception;
@@ -162,7 +163,7 @@ class WebpayController extends Controller
                break;
          }
          //traer los datos del carro $result->buyOrder
-         $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $result->buyOrder)->get();
+         $historial = HistorialCanje::where('ordenCompraCarrito', $result->buyOrder)->get();
          if (count($historial) == 1) {
             return view('webpay.voucher', ['urlRedirection' => $result->urlRedirection, 'token' => $request->token_ws]);
          } else {
@@ -240,8 +241,64 @@ class WebpayController extends Controller
                $WebpayPago = $WebpayPago[0];
                //Se verifica si la transacción ya ha sido aprobada y se actualizan los demas parametros
                if ($WebpayPago->estado_transaccion == 'ApprovedTransaction') {
-                  $historial = HistorialCanje::where('estado', 'encanje')->where('ordenCompraCarrito', $WebpayPago->ord_compra)->get();
+                  $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->get();
                   $historial = json_decode(json_encode($historial[0]));
+
+                  //dd($WebpayPago);
+                  /*
+                    #attributes: array:28 [▼
+                      "id" => 2
+                      "pago_id" => 442
+                      "monto_puntos" => 0
+                      "monto_dinero" => 40779
+                      "diferencia" => 0
+                      "estado_pago" => 0
+                      "ord_compra" => "442"
+                      "id_sesion" => "442"
+                      "fh_transaccion" => "2017-01-04"
+                      "token_ws" => "e27dfb5abf4f6c20c7efa09f9d48958a247cec1c9a94484a20cf22f672b7bafb"
+                      "accounting_date" => "0104"
+                      "card_detail" => ""
+                      "card_number" => "6623"
+                      "card_expiration_date" => ""
+                      "authorization_code" => "1213"
+                      "payment_type_code" => "VN"
+                      "response_code" => "0"
+                      "shares_amount" => ""
+                      "shares_number" => "0"
+                      "commerce_code" => "597020000541"
+                      "transaction_date" => "2017-01-04T09:43:24.127-03:00"
+                      "vci" => "TSY"
+                      "tp_transaction" => "TR_NORMAL_WS"
+                      "tpago" => "2017-01-04"
+                      "hora_pago" => "2017-01-04"
+                      "estado_transaccion" => "ApprovedTransaction"
+                      "created_at" => "2017-01-04 12:44:55"
+                      "updated_at" => "2017-01-04 12:45:29"
+                    ]
+                  */
+
+                  //dd($historial);
+                  /*
+                    +"id": 1
+                    +"user_rut": "180025553"
+                    +"rc": ""
+                    +"fecha_canje": "2017-01-03 22:09:58"
+                    +"id_transaccion": ""
+                    +"saldo_final": ""
+                    +"puntos": ""
+                    +"copago": ""
+                    +"ordenCompraCarrito": "440"
+                    +"estado": "encanje"
+                    +"created_at": "2017-01-03 22:09:58"
+                    +"updated_at": "2017-01-03 22:09:58"
+                  */
+
+                  $user = User::where('rut', $historial->user_rut)->first();
+                  $total = $historial->puntos - $user->pts;
+
+                  $this->generateSwap($user->rut, $user->pts, $user->otpc, ($total * 3), $WebpayPago->ord_compra);
+
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
                   $historial->shares_number = $WebpayPago->shares_number;
@@ -267,10 +324,89 @@ class WebpayController extends Controller
       }
    }
 
+   public function generateSwap($rut, $monto, $otpc, $copago, $ordenCompraCarrito){
+      //Se asegura en caso de caidas
+      try {
+         //Se instancia un nuevo comunicador de webservice con SoapWrapper
+         SoapWrapper::add(function ($service) {
+            $service
+               ->name('ConfirmaCanje')
+               ->wsdl($this->ConfigController->WebServiceServer)
+               ->trace(true);
+         });
+         $psc = new PrestashopController();
+         $result = $psc->prestashopGetProductsDetails($ordenCompraCarrito);
+         $data = [
+            'usuario' => $this->ConfigController->WebServiceUserCelPago,
+            'password' => $this->ConfigController->WebServicePasswordCelPago,
+            'idproveedor' => $this->ConfigController->WebServiceIdProveedorCelPago,
+            //'rut'=>'171058902',//$rut,
+            //'rut'=>'180025553',//$rut,
+            'rut' => $rut,//$rut,
+            'origen' => $this->ConfigController->WebServiceOrigenCelPago,
+            'monto' => $monto, //acá van los montos concatenados
+            //'monto'=>$result->prices, //acá van los montos concatenados
+            'copago' => $copago,
+            'uni_canje' => $this->ConfigController->WebServiceUniCanjeCelPago,
+            //'descripcion'=>'Canje de Prueba JCH', //acá van los nombres concatenados
+            'descripcion' => $result->names, //acá van los nombres concatenados
+            //'cod_prod_prov'=>'COD001', //acá van los códigos concatenados
+            'cod_prod_prov' => $result->references, //acá van los códigos concatenados
+            'id_grupo' => $this->ConfigController->WebServiceIdGrupoCelPago,
+            'id_categoria' => $this->ConfigController->WebServiceIdCategoriaCelPago,
+            'id_subcategoria' => $this->ConfigController->WebServiceIdSubCategoriaCelPago,
+            'hash_otpc' => $otpc,
+            'tdv_otpc' => $this->ConfigController->WebServiceTdvOtpcCelPago,
+         ];
+         // Se usa el nuevo webservice creado
+         SoapWrapper::service('ConfirmaCanje', function ($service) use ($data, $ordenCompraCarrito) {
+            $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
+            //dd($Result);
+            if ($Result->RC == '227') {
+               return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
+            }
+            /*
+             * Aqui despues se reemplazan con los campos faltantes */
+            if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get()) > 0) {
+
+               dd($Result);
+               $historial[0]->user_rut = $Result->rut;
+               $historial[0]->rc = $Result->RC;
+               $historial[0]->fecha_canje = $Result->fecha_canje;
+               $historial[0]->id_transaccion = $Result->id_transaccion;
+               $historial[0]->saldo_final = $Result->saldo_final;
+               $historial[0]->puntos = $Result->puntos;
+               $historial[0]->copago = $data['copago'];
+               $historial[0]->ordenCompraCarrito = $ordenCompraCarrito;
+               $historial[0]->estado = 'canjeado';
+               $historial[0]->save();
+               /*
+               HistorialCanje::create([
+                  'user_rut' => $Result->rut,
+                  'rc' => $Result->RC,
+                  'fecha_canje' => $Result->fecha_canje,
+                  'id_transaccion' => $Result->id_transaccion,
+                  'saldo_final' => $Result->saldo_final,
+                  'puntos' => $Result->puntos,
+                  'copago' => $data['copago'],
+                  'ordenCompraCarrito' => $ordenCompraCarrito,
+                  'estado' => 'canjeado',
+               ])->save();
+               */
+
+               return true;
+            } else {
+               return true;
+            }
+         });
+      } catch (Exception $e) {
+      }
+   }
+
    public function procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA)
    {
       try {
-         $historial = HistorialCanje::select('user_rut')->where('estado', 'encanje')->where('ordenCompraCarrito', $TBK_ORDEN_COMPRA)->get();
+         $historial = HistorialCanje::select('user_rut')->where('ordenCompraCarrito', $TBK_ORDEN_COMPRA)->get();
          $historial = $historial[0];
          $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
       } catch (Exception $e) {
