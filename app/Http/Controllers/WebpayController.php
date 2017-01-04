@@ -369,7 +369,7 @@ class WebpayController extends Controller
              * Aqui despues se reemplazan con los campos faltantes */
             if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->get()) > 0) {
 
-               dd($Result);
+
                $historial[0]->user_rut = $Result->rut;
                $historial[0]->rc = $Result->RC;
                $historial[0]->fecha_canje = $Result->fecha_canje;
