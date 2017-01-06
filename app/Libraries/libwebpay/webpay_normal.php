@@ -331,6 +331,7 @@ class WebPayNormal {
             \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultRequest.log', json_encode($getTransactionResult));
 
 
+
             $getTransactionResultResponse = $this->_getTransactionResult($getTransactionResult);
 
             /** Validación de firma del requerimiento de respuesta enviado por Webpay */

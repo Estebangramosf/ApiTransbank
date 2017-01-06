@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Http\Requests;
+use File;
 use App\Libraries\libwebpay\webpay;
 use App\Libraries\libwebpay\configuration;
 use Illuminate\Support\Facades\Redirect;
@@ -52,10 +53,13 @@ class WebpayController extends Controller
          /** Iniciamos Transaccion */
 
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
+         \Storage::disk('local')->put('Transbank_'.$day.'_InitTransactionRequest.log', json_encode($request));
 
-         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($request));
+         \Storage::disk('local')->append('Transbank_'.$day.'_InitTransactionRequest.log', json_encode(['Process'=>'InitTransaction Test Appending']));
+
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
-         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($result));
+         
+         \Storage::disk('local')->put('Transbank_'.$day.'_InitTransactionResponse.log', json_encode($result));
 
          //Guardamos el token para despues actualizar con el resto de la información
          $WebpayPago = new WebpayPago();
@@ -92,9 +96,10 @@ class WebpayController extends Controller
       try {
          $wp = $this->setParametersForTransbankTransactions();
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($request));
+
+         \Storage::disk('local')->put('Transbank_'.$day.'_GetTransactionRequest.log', $request);
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-         \Storage::disk('local')->put('Transbank_'.$day.'_Transaction.log', json_encode($result));
+         \Storage::disk('local')->put('Transbank_'.$day.'_GetTransactionResponse.log', json_encode($result));
          //Desde acá filtrar el response code
          switch ($result->detailOutput->responseCode) {
             case '0':
@@ -211,11 +216,14 @@ class WebpayController extends Controller
                if ($WebpayPago->estado_transaccion == 'ApprovedTransaction') {
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
 
+
+
                   $user = User::where('rut', $historial->user_rut)->first();
                   $total = $historial->puntos - $user->pts;
 
                   $this->generateSwap($user->rut, $user->pts, $user->otpc, ($total * 3), $WebpayPago->ord_compra);
 
+                  $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
                   $historial->shares_number = $WebpayPago->shares_number;

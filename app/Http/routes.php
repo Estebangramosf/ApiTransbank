@@ -16,8 +16,8 @@ Route::any('{all}', function(){
 })->where('all', '.*');
 */
 
-Route::any('/', function(){
-    return 'It Works';
+Route::get('/test', function(){
+
 });
 
 Route::post('validateCorpbancaCard', 'WebserviceController@validateCorpbancaCard');
