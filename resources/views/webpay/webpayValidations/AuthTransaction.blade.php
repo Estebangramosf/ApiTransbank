@@ -59,20 +59,25 @@
 <body>
 <div class="container">
    <div class="content">
-      <div class="title">Atención</div>
+      {{--
+            <div class="title">Atención</div>
+      --}}
 
       <div class="sub-title">
-         <span>
-            Ya existe una transacción con esta orden de compra, <br>
-            para crear una nueva transacción con esta orden de compra <br>
-            presione continuar.
-         </span>
+         {{--
+                  <span>
+                     Ya existe una transacción con esta orden de compra, <br>
+                     para crear una nueva transacción con esta orden de compra <br>
+                     presione continuar.
+                  </span>
+         --}}
          <br>
 
          <form id="form1" name="form1" method="post" action="{{$urlApi}}/celmediaPagoInit" autocomplete="off"  onSubmit="">
             <input type="hidden" name="TBK_ORDEN_COMPRA" value="{{$TBK_ORDEN_COMPRA}}">
             {{csrf_field()}}
-            <button type="submit" class="btn btn-success btn-lg"><b>Continuar ...</b></button>
+            {{--<button type="submit" class="btn btn-success btn-lg"><b>Continuar ...</b></button>--}}
+            <script type="text/javascript"> document.form1.submit(); </script>
          </form>
 
       </div>
