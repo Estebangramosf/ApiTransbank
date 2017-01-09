@@ -44,6 +44,7 @@ class WebpayController extends Controller
          /** URL Final */
          $urlFinal = $this->ConfigController->urlFinal;
          $request = array(
+            "wSTransactionType" => 'TR_NORMAL_WS',
             "amount" => $amount,
             "buyOrder" => $buyOrder,
             "sessionId" => $sessionId,
@@ -53,13 +54,15 @@ class WebpayController extends Controller
          /** Iniciamos Transaccion */
 
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-         \Storage::disk('local')->put('Transbank_'.$day.'_InitTransactionRequest.log', json_encode($request));
 
-         \Storage::disk('local')->append('Transbank_'.$day.'_InitTransactionRequest.log', json_encode(['Process'=>'InitTransaction Test Appending']));
 
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'InitTransaction Request']));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(($request), JSON_PRETTY_PRINT));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'InitTransaction Response']));
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
-         
-         \Storage::disk('local')->put('Transbank_'.$day.'_InitTransactionResponse.log', json_encode($result));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
 
          //Guardamos el token para despues actualizar con el resto de la información
          $WebpayPago = new WebpayPago();
@@ -96,10 +99,13 @@ class WebpayController extends Controller
       try {
          $wp = $this->setParametersForTransbankTransactions();
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-
-         \Storage::disk('local')->put('Transbank_'.$day.'_GetTransactionRequest.log', $request);
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'GetTransaction Request']));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['token_ws'=>($request->token_ws)], JSON_PRETTY_PRINT));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-         \Storage::disk('local')->put('Transbank_'.$day.'_GetTransactionResponse.log', json_encode($result));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'GetTransaction Response']));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
+         \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
          //Desde acá filtrar el response code
          switch ($result->detailOutput->responseCode) {
             case '0':
@@ -227,6 +233,7 @@ class WebpayController extends Controller
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
                   $historial->shares_number = $WebpayPago->shares_number;
+                  $historial->card_number = $WebpayPago->card_number;
                   return view('webpay.responseCanjeSiTransbank', ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
                } else {
                   //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje

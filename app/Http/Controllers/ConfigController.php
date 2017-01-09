@@ -49,6 +49,8 @@ class ConfigController extends Controller
 
         /* WebService Server Route For Prestashop */
         $this->WebServiceServer = 'http://190.196.23.184/clop_otpc_web_prestashop_desa/wscl/wsclotpc_server_ps.php?wsdl';
+        //$this->WebServiceServer = 'http://190.196.23.184/clop190_98_210_197/wscl/cpagos/wsclsoap_check_ticket.php?wsdl';
+
         // PROD 'http://190.196.23.184/clop_otpc_web_prestashop_prod/wscl/wsclotpc_server_ps.php?wsdl';
         // CERT 'http://190.196.23.184/clop_otpc_web_prestashop_cert/wscl/wsclotpc_server_ps.php?wsdl';
         // DESA 'http://190.196.23.184/clop_otpc_web_prestashop_desa/wscl/wsclotpc_server_ps.php?wsdl';

@@ -16,18 +16,14 @@ Route::any('{all}', function(){
 })->where('all', '.*');
 */
 
-Route::get('/test', function(){
-
-});
+//Route::get('/test', 'SoapController@index');
 
 Route::post('validateCorpbancaCard', 'WebserviceController@validateCorpbancaCard');
 
-Route::get('testAjax',function(){
-    return view('testAjax');
+Route::get('testAjax', function () {
+   return view('testAjax');
 });
 Route::get('vt', 'WebserviceController@validaTarjetaCorpbanca');
-
-
 
 
 Route::get('ws', 'WebserviceController@index');
@@ -35,9 +31,9 @@ Route::get('config', 'ConfigController@index');
 
 
 //Routes for statistics
-Route::get('users','ReportController@users');
-Route::get('transactions','ReportController@transactions');
-Route::get('payments','ReportController@payments');
+Route::get('users', 'ReportController@users');
+Route::get('transactions', 'ReportController@transactions');
+Route::get('payments', 'ReportController@payments');
 
 //Route::get('webpaynormal', 'WebpayController@index');
 
@@ -45,12 +41,12 @@ Route::post('getResult', 'WebpayController@getResult');
 
 Route::post('end', 'WebpayController@end');
 
-Route::post('getShoppingCart','CelmediaPagoController@getShoppingCart');
-Route::post('celmediaPagoInit','CelmediaPagoController@celmediaPagoInit');
+Route::post('getShoppingCart', 'CelmediaPagoController@getShoppingCart');
+Route::post('celmediaPagoInit', 'CelmediaPagoController@celmediaPagoInit');
 
 //Route for Prestashop WebServices
-Route::get('prestashopGetProductsDetails','PrestashopController@prestashopGetProductsDetails');
+Route::get('prestashopGetProductsDetails', 'PrestashopController@prestashopGetProductsDetails');
 
 Route::get('/', function () {
-    return view('welcome');
+   return view('welcome');
 });

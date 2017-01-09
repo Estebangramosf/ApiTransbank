@@ -78,6 +78,7 @@
         <input type="hidden" name="CELPAGO_AUTHORIZATION_CODE" value="{{$historial->authorization_code}}">
         <input type="hidden" name="CELPAGO_PAYMENT_TYPE_CODE" value="{{$historial->payment_type_code}}">
         <input type="hidden" name="CELPAGO_SHARES_NUMBER" value="{{$historial->shares_number}}">
+        <input type="hidden" name="CELPAGO_CARD_NUMBER" value="{{$historial->card_number}}">
 
       </form>
 

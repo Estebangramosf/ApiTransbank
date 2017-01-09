@@ -324,12 +324,12 @@ class WebPayNormal {
 
             $getTransactionResult->tokenInput = $token;
 
-            $this->LogController = new LogController();
+            //$this->LogController = new LogController();
             //dd($getTransactionResult);
-            $our = Carbon::now()->second.Carbon::now()->minute.Carbon::now()->hour;
             $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-            \Storage::disk('local')->put('Transbank_'.$our.'_'.$day.'_GetTransactionResultRequest.log', json_encode($getTransactionResult));
-
+            \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'AknowledgeTransaction Request']));
+            \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($getTransactionResult, JSON_PRETTY_PRINT));
+            \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
 
 
             $getTransactionResultResponse = $this->_getTransactionResult($getTransactionResult);
@@ -339,6 +339,9 @@ class WebPayNormal {
             $soapValidation = new SoapValidation($xmlResponse, $this->config->getWebpayCert());
             $validationResult = $soapValidation->getValidationResult();
 
+            \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'AknowledgeTransaction Response']));
+            \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['result'=>$validationResult], JSON_PRETTY_PRINT));
+            \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
             if ($validationResult === TRUE) {
 
                 $transactionResultOutput = $getTransactionResultResponse->return;
