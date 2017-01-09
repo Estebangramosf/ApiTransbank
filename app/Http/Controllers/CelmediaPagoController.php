@@ -20,6 +20,7 @@ class CelmediaPagoController extends Controller
    private $WebpayController;
    private $ConfigController;
    private $LogController;
+   private $PrestashopController;
 
    public function __construct()
    {
@@ -27,11 +28,18 @@ class CelmediaPagoController extends Controller
       $this->WebpayController = new WebpayController();
       $this->ConfigController = new ConfigController();
       $this->LogController = new LogController();
+      $this->PrestashopController = new PrestashopController();
    }
 
    public function getShoppingCart(Request $request)
    {
       try {
+
+
+         dd($this->PrestashopController->prestashopGetProducts($request->TBK_ORDEN_COMPRA));
+
+
+
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
          //Filtro cuando se ingresa una transacción ya registrada
          if (count($WebpayPago) > 0) {
