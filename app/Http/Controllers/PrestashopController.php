@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\PrestashopProduct;
+use App\PrestashopProductStock;
 use Exception;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Illuminate\Support\Facades\DB;
 use Prestashop;
 
 class PrestashopController extends Controller
@@ -25,10 +28,14 @@ class PrestashopController extends Controller
 
    private $products;
    private $productDetailed;
+   private $productStock;
 
    private $productNames;
    private $productReferences;
    private $productPrices;
+
+   private $product_id;
+   private $product;
 
    private $returnProducts=[];
 
@@ -69,27 +76,93 @@ class PrestashopController extends Controller
          $this->xml = Prestashop::get($this->opt);
          $this->products = $this->xml->children()->children()->children()->associations->children()->cart_rows->children();
 
+
          foreach($this->products as $key => $product){
 
             $this->opt = ['resource' => 'products', 'display' => 'full', 'filter[id]' => (int)$product->id_product];
             $this->productDetailed = Prestashop::get($this->opt);
-            dd($this->productDetailed);
 
             $this->opt = ['resource' => 'stock_availables', 'display' => '[id,quantity]', 'filter[id]' => (int)$product->id_product];
             $this->productStock = Prestashop::get($this->opt);
-            dd($this->productStock);
-            //DEPRECATED
-            //$this->productNames .= (string)$this->productDetailed->products->product->meta_description->language . ' | '; //Nombre
-            $this->productNames .= (string)$this->productDetailed->products->product->name->language . ' | '; //Nombre
-            $this->productReferences .= (string)$this->productDetailed->products->product->reference . ' | '; //Referencia
-            $this->productPrices .= (int)$this->productDetailed->products->product->price . ' | '; //Puntos
+
+
+            $this->product_id = (int)$this->productDetailed->products->product->id;
+            $this->productStock = (int)$this->productStock->stock_availables->stock_available->quantity;
+
+            $this->product = PrestashopProduct::where('producto_id',$this->product_id)->first();
+
+            DB::select('call manage_product_stocks(1,5,0,"1");');
+            DB::select('call manage_product_stocks(1,5,5,"2");');
+            dd();
+
+            $newProduct = PrestashopProduct::create([
+               'orden_compra_id'=>1,
+               'carro_id'=>1,
+               'producto_id'=>1,
+               'cantidad_compra'=>1,
+               'estado_orden_compra'=>'enproceso',
+            ]);
+
+
+
+
+
+            $newProduct = PrestashopProduct::where('id',$newProduct->id)->lockForUpdate()->get();
+
+            $newProduct[0]->cantidad_compra = 4;
+            $newProduct[0]->save();
+
+            dd($newProduct);
+
+            if(count($this->product)>0){
+
+               //dd('ya existe, se actualiza con los nuevos valores');
+               //dd($this->product);
+               //Valida el stock
+               //Maneja el estado del stock
+
+
+
+
+            }elseif($this->product<1 && $this->productStock>0){
+               //dd('no existe, se crea');
+
+               $newProduct = PrestashopProduct::create([
+                  'orden_compra_id'=>$cart_id,
+                  'carro_id'=>$cart_id,
+                  'producto_id'=>$this->product_id,
+                  'cantidad_compra'=>(int)$this->products[$key+1]->quantity,
+                  'estado_orden_compra'=>'enproceso',
+               ]);
+               $newProduct = PrestashopProduct::find($newProduct->id)->sharedLock()->get();
+
+               dd();
+
+
+               $newProductStock = PrestashopProductStock::create([
+                  'producto_id'=>$this->product_id ,
+                  'stock'=>$this->productStock,
+                  'estado_producto'=>'con_stock'
+               ]);
+
+            }
+            //dd();
+
+
+
+
          }
 
+         /*
+         dd([
+            'productStock'=>$this->productStock,
+            'productDetailed'=>$this->productDetailed
+         ]);
          $this->returnProducts = json_decode(json_encode([
-            'names'=>$this->productNames,
-            'references'=>$this->productReferences,
-            'prices'=>$this->productPrices,
+            'productStock'=>$this->productStock,
+            'productDetailed'=>$this->productDetailed
          ]));
+         */
 
          return $this->returnProducts;
       }catch(Exception $e){

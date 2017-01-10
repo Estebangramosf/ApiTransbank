@@ -14,6 +14,9 @@ class CreatePrestashopProductStocksTable extends Migration
     {
         Schema::create('prestashop_product_stocks', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('producto_id');
+            $table->string('stock_real');
+            $table->string('estado_producto');
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ class CreatePrestashopProductStocksTable extends Migration
      */
     public function down()
     {
-        Schema::drop('prestashop_product_stocks');
+        Schema::dropIfExists('prestashop_product_stocks');
     }
 }

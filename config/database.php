@@ -56,9 +56,9 @@ return [
             'driver' => 'mysql',
             'host' => env('DB_HOST', 'localhost'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
+            'database' => env('DB_DATABASE', 'apitransbank'),
+            'username' => env('DB_USERNAME', 'apitransbank'),
+            'password' => env('DB_PASSWORD', '7WaSgj49Hm'),
             'charset' => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix' => '',
@@ -77,6 +77,15 @@ return [
             'prefix' => '',
             'schema' => 'public',
         ],
+        'sqlsrv' => array(
+            'driver' => 'sqlsrv',
+            'host' => '190.196.23.184', // Provide IP address here
+            'database' => 'CLOPCORP',
+            'username' => 'jcampos',
+            'password' => 'nemesis',
+            'prefix' => '',
+
+        ),
 
     ],
 

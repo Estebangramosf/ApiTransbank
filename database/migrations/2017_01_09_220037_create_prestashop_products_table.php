@@ -14,6 +14,13 @@ class CreatePrestashopProductsTable extends Migration
     {
         Schema::create('prestashop_products', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('orden_compra_id');
+            $table->string('carro_id');
+            $table->string('cantidad_compra');
+            $table->string('estado_orden_compra');
+            $table->string('producto_id');
+            $table->string('stock_real');
+            $table->string('estado_producto');
             $table->timestamps();
         });
     }
@@ -25,6 +32,6 @@ class CreatePrestashopProductsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('prestashop_products');
+        Schema::dropIfExists('prestashop_products');
     }
 }
