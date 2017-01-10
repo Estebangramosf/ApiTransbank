@@ -36,9 +36,7 @@ class CelmediaPagoController extends Controller
       try {
 
 
-         dd($this->PrestashopController->prestashopGetProducts($request->TBK_ORDEN_COMPRA));
-
-
+         //dd($this->PrestashopController->prestashopGetProducts($request->TBK_ORDEN_COMPRA));
 
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
          //Filtro cuando se ingresa una transacción ya registrada
@@ -132,6 +130,8 @@ class CelmediaPagoController extends Controller
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
          } else {
+            return view('webpay.puntosInsuficientes',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
+
             $total = ($request->TBK_MONTO - $userResult->pts);
 
             if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
