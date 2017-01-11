@@ -74,7 +74,7 @@ class ConfigController extends Controller
         /* Celmedia Pago */
         $this->WebServiceUserCelPago = 'celmediapago';
         $this->WebServicePasswordCelPago = '0x552A6798E1F1BCF715EFDB1E1DDC0874';
-        $this->WebServiceOrigenCelPago = 'PRUEBAS_JCH';
+        $this->WebServiceOrigenCelPago = 'ECOMMERCE_CELMEDIAPAGO';
         $this->WebServiceIdProveedorCelPago = '9';
         $this->WebServiceUniCanjeCelPago = '0';
         $this->WebServiceIdGrupoCelPago = '10';

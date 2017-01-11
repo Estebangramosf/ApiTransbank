@@ -130,7 +130,7 @@ class CelmediaPagoController extends Controller
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
          } else {
-            return view('webpay.puntosInsuficientes',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
+            //return view('webpay.puntosInsuficientes',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
 
             $total = ($request->TBK_MONTO - $userResult->pts);
 
