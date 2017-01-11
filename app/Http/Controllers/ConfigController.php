@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use Artisaninweb\SoapWrapper\Facades\SoapWrapper;
 
-
-
 class ConfigController extends Controller
 {
 
@@ -49,11 +47,6 @@ class ConfigController extends Controller
 
         /* WebService Server Route For Prestashop */
         $this->WebServiceServer = 'http://190.196.23.184/clop_otpc_web_prestashop_desa/wscl/wsclotpc_server_ps.php?wsdl';
-        //$this->WebServiceServer = 'http://190.196.23.184/clop190_98_210_197/wscl/cpagos/wsclsoap_check_ticket.php?wsdl';
-
-        // PROD 'http://190.196.23.184/clop_otpc_web_prestashop_prod/wscl/wsclotpc_server_ps.php?wsdl';
-        // CERT 'http://190.196.23.184/clop_otpc_web_prestashop_cert/wscl/wsclotpc_server_ps.php?wsdl';
-        // DESA 'http://190.196.23.184/clop_otpc_web_prestashop_desa/wscl/wsclotpc_server_ps.php?wsdl';
 
         /* Promo Service */
         $this->WebServiceUser = 'tienda_ps';
@@ -104,6 +97,7 @@ class ConfigController extends Controller
         /* Keys And Variables for Transbank */
         $this->TransbankEnvironment = "INTEGRACION";
         $this->TransbankCommerceCode = "597020000541";
+
         $this->TransbankPrivateKey =
            "-----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEA0ClVcH8RC1u+KpCPUnzYSIcmyXI87REsBkQzaA1QJe4w/B7g

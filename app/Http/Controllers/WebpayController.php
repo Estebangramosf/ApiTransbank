@@ -21,12 +21,10 @@ class WebpayController extends Controller
    private $webpay_config;
    private $webpay_certificate;
    private $ConfigController;
-   private $LogController;
 
    public function __construct()
    {
       $this->ConfigController = new ConfigController();
-      $this->LogController = new LogController();
    }
 
    public function initTransaction($a, $bO, $sId)
@@ -52,21 +50,14 @@ class WebpayController extends Controller
             "urlFinal" => $urlFinal,
          );
          /** Iniciamos Transaccion */
-
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
-
-
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'InitTransaction Request']));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(($request), JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'InitTransaction Response']));
-
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
-
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
-
-         //Guardamos el token para despues actualizar con el resto de la información
          $WebpayPago = new WebpayPago();
          $WebpayPago->pago_id = $bO;
          $WebpayPago->ord_compra = $bO;
@@ -74,7 +65,6 @@ class WebpayController extends Controller
          $WebpayPago->token_ws = $result->token;
          $WebpayPago->estado_transaccion = 'initTransaction';
          $WebpayPago->save();
-         //Enviamos a la vista el objeto resultante con la informacion para ser POSTeada hacia el ecommerce
          return view('webpay.index', ['result' => $result]);
       } catch (Exception $e) {
          return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $bO, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
@@ -83,11 +73,8 @@ class WebpayController extends Controller
 
    public function setParametersForTransbankTransactions()
    {
-      //Iniciamos un objeto de la clase configuracion
       $wp_config = new configuration();
-      //Llamamos a la funcion que solicita la informacion de certificados y ambientes
       $wp_certificate = $this->cert_normal();
-      //Asignamos a la configuración los parametros solicitados desde el resultado de la funcion llamada anteriormente
       $wp_config->setEnvironment($wp_certificate['environment']);
       $wp_config->setCommerceCode($wp_certificate['commerce_code']);
       $wp_config->setPrivateKey($wp_certificate['private_key']);
@@ -108,7 +95,6 @@ class WebpayController extends Controller
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'GetTransaction Response']));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
-         //Desde acá filtrar el response code
          switch ($result->detailOutput->responseCode) {
             case '0':
                //echo "Transacción Aprobada";
@@ -147,7 +133,6 @@ class WebpayController extends Controller
                $this->saveTransactionResult($request->token_ws, $result, 'TransactionUnauthorizedItem');
                break;
          }
-         //traer los datos del carro $result->buyOrder
          $historial = HistorialCanje::where('ordenCompraCarrito', $result->buyOrder)->first();
          if (count($historial) == 1) {
             return view('webpay.voucher', ['urlRedirection' => $result->urlRedirection, 'token' => $request->token_ws]);
@@ -155,7 +140,6 @@ class WebpayController extends Controller
             return view('webpay.canjePendiente', ['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
          }
       } catch (Exception $e) {
-         //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->first();
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
          return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
@@ -166,7 +150,6 @@ class WebpayController extends Controller
    {
       try {
          $WebpayPago = WebpayPago::where('token_ws', $token_ws)->first();
-
          $WebpayPago->accounting_date = $result->accountingDate;
          $WebpayPago->ord_compra = $result->buyOrder;
          $WebpayPago->id_sesion = $result->sessionId;
@@ -187,7 +170,6 @@ class WebpayController extends Controller
          $WebpayPago->hora_pago = date('Y-m-d H:i:s');
          $WebpayPago->estado_transaccion = $transactionStatus; //'getTransactionResult';
          $WebpayPago->save();
-         //Retornamos el objeto guardado
          return $WebpayPago;
       } catch (Exception $e) {
       }
@@ -196,41 +178,21 @@ class WebpayController extends Controller
    public function end(Request $request)
    {
       try {
-         //Se llama la funcion que asigna los parametros necesarios de certificado y ambiente
          $wp = $this->setParametersForTransbankTransactions();
-
-         //Se hace la inicializacion de la transaccion por transbank
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-
-         //Valida que el resultado sea arreglo
          if (is_array($result)) {
-            //Transformamos el arreglo a objeto
             $result = json_decode(json_encode($result));
-            //Se valida el código de respuesta del resultado
             if (strpos($result->detail, '274', 15)) {
-               //"Transacción anulada";
-               //Acá es cuando el cliente anula desde módulo de webpay transbank
-               //Se procesa este caso
                $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-               //Se redirecciona a la pagina de rechazo
                return view('webpay.end',
                   ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } elseif (strpos($result->detail, '272', 15)) {
-               //"Error de transaccion por Timeout";
-               //Se aprobecha este error para verificar que la transacción no fue anulada
-               //Se busca la información guardada en la base local mediante el token
                $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->first();
-               //Se verifica si la transacción ya ha sido aprobada y se actualizan los demas parametros
                if ($WebpayPago->estado_transaccion == 'ApprovedTransaction') {
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
-
-
-
                   $user = User::where('rut', $historial->user_rut)->first();
                   $total = $historial->puntos - $user->pts;
-
                   $this->generateSwap($user->rut, $user->pts, $user->otpc, ($total * 3), $WebpayPago->ord_compra);
-
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
@@ -238,9 +200,7 @@ class WebpayController extends Controller
                   $historial->card_number = $WebpayPago->card_number;
                   return view('webpay.responseCanjeSiTransbank', ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
                } else {
-                  //Se deja nuevamente al cliente en estado activo para realizar un nuevo canje
                   $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
-                  //Cuando el estado no fue aprobado, lo redicrecciona a su vista correspondiente
                   return view('webpay.webpayResponseErrors.' . $WebpayPago->estado_transaccion,
                      ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
                }
@@ -259,9 +219,7 @@ class WebpayController extends Controller
    }
 
    public function generateSwap($rut, $monto, $otpc, $copago, $ordenCompraCarrito){
-      //Se asegura en caso de caidas
       try {
-         //Se instancia un nuevo comunicador de webservice con SoapWrapper
          SoapWrapper::add(function ($service) {
             $service
                ->name('ConfirmaCanje')
@@ -277,7 +235,6 @@ class WebpayController extends Controller
             'rut' => $rut,//$rut,
             'origen' => $this->ConfigController->WebServiceOrigenCelPago,
             'monto' => $monto, //acá van los montos concatenados
-            //'monto'=>$result->prices, //acá van los montos concatenados
             'copago' => $copago,
             'uni_canje' => $this->ConfigController->WebServiceUniCanjeCelPago,
             'descripcion' => $result->names, //acá van los nombres concatenados
@@ -288,15 +245,12 @@ class WebpayController extends Controller
             'hash_otpc' => $otpc,
             'tdv_otpc' => $this->ConfigController->WebServiceTdvOtpcCelPago,
          ];
-         // Se usa el nuevo webservice creado
          SoapWrapper::service('ConfirmaCanje', function ($service) use ($data, $ordenCompraCarrito) {
             $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
             if ($Result->RC == '227') {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
-            /* Aqui despues se reemplazan con los campos faltantes */
             if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->first()) > 0) {
-
                $historial->user_rut = $Result->rut;
                $historial->rc = $Result->RC;
                $historial->fecha_canje = $Result->fecha_canje;
@@ -307,7 +261,6 @@ class WebpayController extends Controller
                $historial->ordenCompraCarrito = $ordenCompraCarrito;
                $historial->estado = 'canjeado';
                $historial->save();
-
                return true;
             } else {
                return true;
@@ -332,20 +285,17 @@ class WebpayController extends Controller
    public function CambioEstadoPorAnulacionWSCLOTPC($user_rut)
    {
       try {
-         //Se instancia un nuevo comunicador de webservice con SoapWrapper
          SoapWrapper::add(function ($service) {
             $service
                ->name('currency')
                ->wsdl($this->ConfigController->WebServiceServer)
                ->trace(true);
          });
-         //Se definen los parametros que consume el webservice
          $data = [
             'usuario' => $this->ConfigController->WebServiceUserCelPago,
             'password' => $this->ConfigController->WebServicePasswordCelPago,
             'rut' => $user_rut,
          ];
-         // Se usa el nuevo webservice creado
          SoapWrapper::service('currency', function ($service) use ($data) {
             $service->call('CambioEstadoPorAnulacionWSCLOTPC', [$data]);
             return true;

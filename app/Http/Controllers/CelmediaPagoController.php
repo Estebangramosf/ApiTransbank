@@ -19,7 +19,6 @@ class CelmediaPagoController extends Controller
    private $WebserviceController;
    private $WebpayController;
    private $ConfigController;
-   private $LogController;
    private $PrestashopController;
 
    public function __construct()
@@ -27,28 +26,20 @@ class CelmediaPagoController extends Controller
       $this->WebserviceController = new WebserviceController();
       $this->WebpayController = new WebpayController();
       $this->ConfigController = new ConfigController();
-      $this->LogController = new LogController();
       $this->PrestashopController = new PrestashopController();
    }
 
    public function getShoppingCart(Request $request)
    {
       try {
-
-
-         //dd($this->PrestashopController->prestashopGetProducts($request->TBK_ORDEN_COMPRA));
-
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
-         //Filtro cuando se ingresa una transacción ya registrada
          if (count($WebpayPago) > 0) {
             if ($WebpayPago->estado_transaccion != 'ApprovedTransaction') {
-
                $TV = TransactionValidation::where('TBK_ORDEN_COMPRA', '=',$WebpayPago->ord_compra)->first();
                if(count($TV)>0){
                   $TV->delete();
                }
                $TransactionValidation = new TransactionValidation();
-
                $TransactionValidation->TBK_MONTO = $request->TBK_MONTO;
                $TransactionValidation->TBK_TIPO_TRANSACCION = $request->TBK_TIPO_TRANSACCION;
                $TransactionValidation->TBK_ORDEN_COMPRA = $request->TBK_ORDEN_COMPRA;
@@ -58,12 +49,8 @@ class CelmediaPagoController extends Controller
                $TransactionValidation->TBK_OTPC_WEB = $request->TBK_OTPC_WEB;
                $TransactionValidation->TRANSACTION_STATUS = $WebpayPago->estado_transaccion;
                $TransactionValidation->save();
-
                return view('webpay.webpayValidations.AuthTransaction',
                   ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlApi' => $this->ConfigController->urlApi]);
-               /**/
-               //return view('webpay.webpayValidations.TransactionAlreadyProcessed',
-               //['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } else {
                return view('webpay.webpayValidations.TransactionAlreadyApproved',
                   ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA,'urlFracaso'=>$this->ConfigController->urlFracaso]);
@@ -72,17 +59,14 @@ class CelmediaPagoController extends Controller
             return $this->celmediaPagoPostInit($request);
          }
       } catch (Exception $e) {
-         //Excepcion que reacciona cuando ocurre un error al comprobar los certificados
          return view('webpay.webpayResponseErrors.invalidWebpayCert',
             ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
-
    }//End function getShoppingCart()
    public function celmediaPagoInit(Request $request)
    {
       try {
          $request = TransactionValidation::where('TBK_ORDEN_COMPRA', '=', $request->TBK_ORDEN_COMPRA)->first();
-
          if ($request->TRANSACTION_STATUS == 'ApprovedTransaction') {
             return view('webpay.webpayValidations.TransactionAlreadyApproved',
                ['urlFracaso'=>$this->ConfigController->urlFracaso]);
@@ -101,13 +85,9 @@ class CelmediaPagoController extends Controller
    public function celmediaPagoPostInit($request)
    {
       try {
-         //Se crea el objeto $userResult como resultado de la verificación del usuario
          $userResult = $this->verifyRUTExistanceAndGetUser($request);
-         //$request->TBK_MONTO=str_replace(".","",$request->TBK_MONTO);
          $request->TBK_MONTO = round($request->TBK_MONTO, 0);
          if ($userResult->pts >= $request->TBK_MONTO) {
-            //Se genera el canje y solicitud de canje
-
             if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
                HistorialCanje::create([
                   'user_rut' => $request->TBK_RUT,
@@ -116,23 +96,18 @@ class CelmediaPagoController extends Controller
                   'estado' => 'encanje',
                ])->save();
             }
-
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
             if (count($historial) > 0) {
                $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
                $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
-
                return view('webpay.responseCanjeNoTransbank',
                   ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
             }
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
-            //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if (count($historial) == 0) {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
          } else {
-            //return view('webpay.puntosInsuficientes',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
-
             $total = ($request->TBK_MONTO - $userResult->pts);
             if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
                HistorialCanje::create([
@@ -143,39 +118,28 @@ class CelmediaPagoController extends Controller
                   'estado' => 'encanje',
                ])->save();
             }
-
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
             $result = '';
-
             if (count($historial) > 0) {
                $result = $this->WebpayController->initTransaction($total * 3, $request->TBK_ORDEN_COMPRA, $request->TBK_ID_SESION);
             }
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
-            //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if (count($historial) == 0) {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
             return $result;
          }
       } catch (Exception $e) {
-         //Aca se cae en la primera validación de error de certificados
          return view('webpay.webpayResponseErrors.invalidWebpayCert',
             ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
-
-
-   //Funcion que verifica si el rut del usuario existe mediante request y devuelve al usuario como objeto de la clase
-   //En caso que el usuario no exista, redirecciona al usuario
    public function verifyRUTExistanceAndGetUser($request)
    {
       try {
          if ($request->TBK_RUT && isset($request->TBK_RUT)) {
-            //Obtiene la informacion del cliente, si no existe lo registra, si existe, actualiza los puntos desde WS
             $this->ConsultaPuntosWSCLOTPC($request->TBK_RUT, $request->TBK_OTPC_WEB);
-            //Se busca al usuario en la base de datos local
             $user = User::where('rut', $request->TBK_RUT)->first();
-            //se verifica si existe y lo guarda en una veriable
             if (count($user)>0) {
                return $user;
             } else {
@@ -185,20 +149,15 @@ class CelmediaPagoController extends Controller
       } catch (Exception $e) {
       }
    }//End function verifyRUTExistanceAndGetUser()
-
-   //Funcion que verifica los puntos de un cliente y registra al usuario en caso que no exista en la base CelmediaPago
    public function ConsultaPuntosWSCLOTPC($rut, $otpc)
    {
-      //Se asegura en caso de caidas
       try {
-         //Se instancia un nuevo comunicador de webservice con SoapWrapper
          SoapWrapper::add(function ($service) {
             $service
                ->name('currency')
                ->wsdl($this->ConfigController->WebServiceServer)
                ->trace(true);
          });
-         //Se definen los parametros que consume el webservice
          $data = [
             'rut' => $rut,
             'usuario' => $this->ConfigController->WebServiceUserCelPago,
@@ -206,24 +165,16 @@ class CelmediaPagoController extends Controller
             'password' => $this->ConfigController->WebServicePasswordCelPago,
             'idproveedor' => $this->ConfigController->WebServiceIdProveedorCelPago
          ];
-
-
-         // Se usa el nuevo webservice creado
          SoapWrapper::service('currency', function ($service) use ($data, $otpc) {
             $ClientData = $service->call('ConsultaPuntosWSCLOTPC', [$data]);
-            //Se busca al usuario en la base de datos local
             $user = User::where('rut', $ClientData->rut)->first();
-
-            //Se verifica si el tiene rut válido
             if (isset($user->rut)) {
-               //Se busca y actualizan los puntos del usuario, luego se guarda
                $user = User::findOrFail($user->id);
                $user->pts = $ClientData->SaldoPuntos;//30000;//
                $user->otpc = $otpc;
                $user->save();
                return true;
             } else {
-               //En caso que el usuario no exista en base se registra y se guarda
                User::create([
                   'name' => $ClientData->Nombre,
                   'rut' => $ClientData->rut,
@@ -239,9 +190,7 @@ class CelmediaPagoController extends Controller
 
    public function generateSwap($rut, $monto, $otpc, $copago, $ordenCompraCarrito)
    {
-      //Se asegura en caso de caidas
       try {
-         //Se instancia un nuevo comunicador de webservice con SoapWrapper
          SoapWrapper::add(function ($service) {
             $service
                ->name('ConfirmaCanje')
@@ -257,7 +206,6 @@ class CelmediaPagoController extends Controller
             'rut' => $rut,//$rut,
             'origen' => $this->ConfigController->WebServiceOrigenCelPago,
             'monto' => $monto, //acá van los montos concatenados
-            //'monto'=>$result->prices, //acá van los montos concatenados
             'copago' => $copago,
             'uni_canje' => $this->ConfigController->WebServiceUniCanjeCelPago,
             'descripcion' => $result->names, //acá van los nombres concatenados
@@ -268,15 +216,12 @@ class CelmediaPagoController extends Controller
             'hash_otpc' => $otpc,
             'tdv_otpc' => $this->ConfigController->WebServiceTdvOtpcCelPago,
          ];
-         // Se usa el nuevo webservice creado
          SoapWrapper::service('ConfirmaCanje', function ($service) use ($data, $ordenCompraCarrito) {
             $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
             if ($Result->RC == '227') {
                return view('webpay.canjePendiente',
                   ['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
             }
-            /*
-             * Aqui despues se reemplazan con los campos faltantes */
             if (count( $historial = HistorialCanje::where('ordenCompraCarrito', $ordenCompraCarrito)->first()) > 0) {
                $historial->user_rut = $Result->rut;
                $historial->rc = $Result->RC;
