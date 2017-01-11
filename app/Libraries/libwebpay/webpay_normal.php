@@ -266,6 +266,7 @@ class WebPayNormal {
 
             $wsTransactionDetail = new wsTransactionDetail();
             $wsTransactionDetail->commerceCode = $this->config->getCommerceCode();
+
             $wsTransactionDetail->buyOrder = $buyOrder;
             $wsTransactionDetail->amount = $amount;
 
@@ -281,7 +282,6 @@ class WebPayNormal {
             $xmlResponse = $this->soapClient->__getLastResponse();
             $soapValidation = new SoapValidation($xmlResponse, $this->config->getWebpayCert());
             $validationResult = $soapValidation->getValidationResult();
-
 
             /** Valida conexion a Webpay. Caso correcto retorna URL y Token */
             if ($validationResult === TRUE) {

@@ -60,7 +60,9 @@ class WebpayController extends Controller
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(($request), JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'InitTransaction Response']));
+
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
+
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
 

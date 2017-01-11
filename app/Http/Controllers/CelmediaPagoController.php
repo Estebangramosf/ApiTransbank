@@ -82,6 +82,7 @@ class CelmediaPagoController extends Controller
    {
       try {
          $request = TransactionValidation::where('TBK_ORDEN_COMPRA', '=', $request->TBK_ORDEN_COMPRA)->first();
+
          if ($request->TRANSACTION_STATUS == 'ApprovedTransaction') {
             return view('webpay.webpayValidations.TransactionAlreadyApproved',
                ['urlFracaso'=>$this->ConfigController->urlFracaso]);
@@ -133,7 +134,6 @@ class CelmediaPagoController extends Controller
             //return view('webpay.puntosInsuficientes',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
 
             $total = ($request->TBK_MONTO - $userResult->pts);
-
             if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
                HistorialCanje::create([
                   'user_rut' => $request->TBK_RUT,
@@ -145,14 +145,12 @@ class CelmediaPagoController extends Controller
             }
 
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
-
             $result = '';
 
             if (count($historial) > 0) {
                $result = $this->WebpayController->initTransaction($total * 3, $request->TBK_ORDEN_COMPRA, $request->TBK_ID_SESION);
             }
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
-
             //si viene vacío es por que no se generó la compra, por ende puede que esté en estado en canje
             if (count($historial) == 0) {
                return view('webpay.canjePendiente',['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
