@@ -32,6 +32,7 @@ class CelmediaPagoController extends Controller
    public function getShoppingCart(Request $request)
    {
       try {
+
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
          if (count($WebpayPago) > 0) {
             if ($WebpayPago->estado_transaccion != 'ApprovedTransaction') {
@@ -86,6 +87,7 @@ class CelmediaPagoController extends Controller
    {
       try {
          $userResult = $this->verifyRUTExistanceAndGetUser($request);
+         //en este paso se debe validar para fase 2 que el monto corresponda a lo que está por ws desde prestashop
          $request->TBK_MONTO = round($request->TBK_MONTO, 0);
          if ($userResult->pts >= $request->TBK_MONTO) {
             if (count(HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first()) == 0) {
