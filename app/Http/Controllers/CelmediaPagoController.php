@@ -123,6 +123,9 @@ class CelmediaPagoController extends Controller
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
             $result = '';
             if (count($historial) > 0) {
+               //Aca se podria hacer el reemplazo del nuevo numero de orden de compra
+               //Se podria cambiar y trabajar con el id de sesion para transbank y guardo el orden de compra real
+
                $result = $this->WebpayController->initTransaction($total * 3, $request->TBK_ORDEN_COMPRA, $request->TBK_ID_SESION);
             }
             $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class WebpayController extends Controller
 {
-   private $webpay;
+   private $WebpayPago;
    private $webpay_config;
    private $webpay_certificate;
    private $ConfigController;
@@ -85,6 +85,7 @@ class WebpayController extends Controller
 
    public function getResult(Request $request)
    {
+
       try {
          $wp = $this->setParametersForTransbankTransactions();
          $day = Carbon::now()->day.Carbon::now()->month.Carbon::now()->year;
@@ -95,50 +96,50 @@ class WebpayController extends Controller
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'GetTransaction Response']));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
+
          switch ($result->detailOutput->responseCode) {
             case '0':
                //echo "Transacción Aprobada";
-               $this->saveTransactionResult($request->token_ws, $result, 'ApprovedTransaction');/*'getTransactionResult'*/
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'ApprovedTransaction');/*'getTransactionResult'*/
+               return view('webpay.voucher', ['urlRedirection' => $result->urlRedirection, 'token' => $request->token_ws]);
                break;
             case '-1':
                //echo "Transacción Rechazada";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionDeclined');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionDeclined');
                break;
             case '-2':
                //echo "Transacción debe Reintentarse";
-               $this->saveTransactionResult($request->token_ws, $result, 'RetryTransaction');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'RetryTransaction');
                break;
             case '-3':
                //echo "Error en Transacción";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionError');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionError');
                break;
             case '-4':
                //echo "Rechazo de Transacción";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionRejected');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionRejected');
                break;
             case '-5':
                //echo "Rechazo por error de Tasa";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionRejectedByErrorRate');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionRejectedByErrorRate');
                break;
             case '-6':
                //echo "Excede cupo máximo Mensual";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionExceedsMonthlyMaximumQuota');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionExceedsMonthlyMaximumQuota');
                break;
             case '-7':
                //echo "Excede límite diario por Transacción";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionExceedsDailyLimit');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionExceedsDailyLimit');
                break;
             case '-8':
                //echo "Rubro no Autorizado";
-               $this->saveTransactionResult($request->token_ws, $result, 'TransactionUnauthorizedItem');
+               $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionUnauthorizedItem');
                break;
          }
-         $historial = HistorialCanje::where('ordenCompraCarrito', $result->buyOrder)->first();
-         if (count($historial) == 1) {
-            return view('webpay.voucher', ['urlRedirection' => $result->urlRedirection, 'token' => $request->token_ws]);
-         } else {
-            return view('webpay.canjePendiente', ['ecommerceHomeUrl' => $this->ConfigController->ecommerceHomeUrl]);
-         }
+
+         $this->procesarTransaccionNoAprobada($this->WebpayPago->ord_compra);
+         return view('webpay.webpayResponseErrors.' . $this->WebpayPago->estado_transaccion,
+            ['TBK_ORDEN_COMPRA' => $this->WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       } catch (Exception $e) {
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->first();
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
@@ -194,6 +195,7 @@ class WebpayController extends Controller
                   $total = $historial->puntos - $user->pts;
                   $this->generateSwap($user->rut, $user->pts, $user->otpc, ($total * 3), $WebpayPago->ord_compra);
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
+                  $historial->copago = $WebpayPago->monto_dinero;
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
                   $historial->shares_number = $WebpayPago->shares_number;
