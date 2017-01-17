@@ -214,6 +214,7 @@ class WebpayController extends Controller
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $historial->id_sesion = $WebpayPago->id_sesion;
                   $historial->copago = $WebpayPago->monto_dinero;
+                  $historial->puntos = $user->pts;
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
                   $historial->shares_number = $WebpayPago->shares_number;
