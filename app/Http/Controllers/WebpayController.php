@@ -36,9 +36,9 @@ class WebpayController extends Controller
          /** Monto de la transacción */
          $amount = $a;
          /** Orden de compra de la tienda */
-         $buyOrder = $bO;
+         $buyOrder = $sId;//$bO;
          /** Código comercio de la tienda entregado por Transbank */
-         $sessionId = $sId;
+         $sessionId = $bO;//$sId;
          /** URL de retorno */
          $urlReturn = $this->ConfigController->urlReturn;
          /** URL Final */
@@ -71,7 +71,7 @@ class WebpayController extends Controller
          $WebpayPago->save();
          return view('webpay.index', ['result' => $result]);
       } catch (Exception $e) {
-         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $bO, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $sId, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
@@ -145,13 +145,13 @@ class WebpayController extends Controller
 
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          return view('webpay.webpayResponseErrors.' . $this->WebpayPago->estado_transaccion,
-            ['TBK_ORDEN_COMPRA' => $this->WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+            ['TBK_ORDEN_COMPRA' => $this->WebpayPago->id_sesion, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       } catch (Exception $e) {
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->first();
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
-         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $WebpayPago->id_sesion, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
@@ -161,8 +161,7 @@ class WebpayController extends Controller
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $WebpayPago = WebpayPago::where('token_ws', $token_ws)->first();
          $WebpayPago->accounting_date = $result->accountingDate;
-         $WebpayPago->ord_compra = $result->buyOrder;
-         $WebpayPago->id_sesion = $result->sessionId;
+         $WebpayPago->id_sesion = $result->buyOrder;
          $WebpayPago->fh_transaccion = date('Y-m-d H:i:s');
          $WebpayPago->card_number = $result->cardDetail->cardNumber;
          $WebpayPago->card_expiration_date = $result->cardDetail->cardExpirationDate;
@@ -190,6 +189,7 @@ class WebpayController extends Controller
       try {
          $wp = $this->setParametersForTransbankTransactions();
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
+
          if (is_array($result)) {
             $result = json_decode(json_encode($result));
             if (strpos($result->detail, '274', 15)) {
@@ -198,9 +198,10 @@ class WebpayController extends Controller
 
                //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                return view('webpay.end',
-                  ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+                  ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } elseif (strpos($result->detail, '272', 15)) {
                $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->first();
+
                if ($WebpayPago->estado_transaccion == 'ApprovedTransaction') {
                   //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
@@ -211,6 +212,7 @@ class WebpayController extends Controller
 
                   //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
+                  $historial->id_sesion = $WebpayPago->id_sesion;
                   $historial->copago = $WebpayPago->monto_dinero;
                   $historial->authorization_code = $WebpayPago->authorization_code;
                   $historial->payment_type_code = $WebpayPago->payment_type_code;
@@ -222,22 +224,22 @@ class WebpayController extends Controller
                   $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
                   //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   return view('webpay.webpayResponseErrors.' . $WebpayPago->estado_transaccion,
-                     ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+                     ['TBK_ORDEN_COMPRA' => $WebpayPago->id_sesion, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
                }
             } else {
                //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-               return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+               return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             }
          } else {
             //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
             $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-            return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+            return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
          }
       } catch (Exception $e) {
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
-         return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+         return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 

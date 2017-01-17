@@ -41,8 +41,9 @@ class CelmediaPagoController extends Controller
          $tbk_ord_compra = $fechadat;
          dd($fechadat);
          */
-         //$request->TBK_ORDEN_COMPRA .= date("YmdHms");
+         $request->TBK_ID_SESION .= date("YmdHms");
          //dd($request->TBK_ORDEN_COMPRA);
+         //dd($request);
 
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
@@ -70,7 +71,7 @@ class CelmediaPagoController extends Controller
             } else {
                //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                return view('webpay.webpayValidations.TransactionAlreadyApproved',
-                  ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA,'urlFracaso'=>$this->ConfigController->urlFracaso]);
+                  ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION,'urlFracaso'=>$this->ConfigController->urlFracaso]);
             }
          } else {
             return $this->celmediaPagoPostInit($request);
@@ -78,7 +79,7 @@ class CelmediaPagoController extends Controller
       } catch (Exception $e) {
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          return view('webpay.webpayResponseErrors.invalidWebpayCert',
-            ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+            ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }//End function getShoppingCart()
    public function celmediaPagoInit(Request $request)
@@ -88,7 +89,7 @@ class CelmediaPagoController extends Controller
          $request = TransactionValidation::where('TBK_ORDEN_COMPRA', '=', $request->TBK_ORDEN_COMPRA)->first();
          if ($request->TRANSACTION_STATUS == 'ApprovedTransaction') {
             return view('webpay.webpayValidations.TransactionAlreadyApproved',
-               ['urlFracaso'=>$this->ConfigController->urlFracaso]);
+               ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION,'urlFracaso'=>$this->ConfigController->urlFracaso]);
          }
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $WebpayPagoOld = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
@@ -99,7 +100,7 @@ class CelmediaPagoController extends Controller
       } catch (Exception $e) {
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          return view('webpay.webpayResponseErrors.invalidWebpayCert',
-            ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+            ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
@@ -122,6 +123,7 @@ class CelmediaPagoController extends Controller
             if (count($historial) > 0) {
                $this->generateSwap($request->TBK_RUT, $request->TBK_MONTO, $request->TBK_OTPC_WEB, 0, $request->TBK_ORDEN_COMPRA);
                $historial = HistorialCanje::where('ordenCompraCarrito', $request->TBK_ORDEN_COMPRA)->first();
+               $historial->id_sesion = $request->TBK_ID_SESION;
                return view('webpay.responseCanjeNoTransbank',
                   ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
             }
@@ -162,7 +164,7 @@ class CelmediaPagoController extends Controller
       } catch (Exception $e) {
          //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          return view('webpay.webpayResponseErrors.invalidWebpayCert',
-            ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+            ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
    public function verifyRUTExistanceAndGetUser($request)
