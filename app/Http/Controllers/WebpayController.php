@@ -30,6 +30,8 @@ class WebpayController extends Controller
    public function initTransaction($a, $bO, $sId)
    {
       try {
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
+
          $wp = $this->setParametersForTransbankTransactions();
          /** Monto de la transacción */
          $amount = $a;
@@ -55,10 +57,12 @@ class WebpayController extends Controller
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(($request), JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['Transaction Process'=>'InitTransaction Response']));
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $result = $wp->getNormalTransaction()->initTransaction($amount, $buyOrder, $sessionId, $urlReturn, $urlFinal);
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode($result, JSON_PRETTY_PRINT));
          \Storage::disk('local')->append('Transbank_'.$day.'_DailyTransactions.log', json_encode(['#######################################']));
          $WebpayPago = new WebpayPago();
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $WebpayPago->pago_id = $bO;
          $WebpayPago->ord_compra = $bO;
          $WebpayPago->id_sesion = $bO;
@@ -136,13 +140,17 @@ class WebpayController extends Controller
                $this->WebpayPago = $this->saveTransactionResult($request->token_ws, $result, 'TransactionUnauthorizedItem');
                break;
          }
-
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $this->procesarTransaccionNoAprobada($this->WebpayPago->ord_compra);
+
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          return view('webpay.webpayResponseErrors.' . $this->WebpayPago->estado_transaccion,
             ['TBK_ORDEN_COMPRA' => $this->WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       } catch (Exception $e) {
          $WebpayPago = WebpayPago::select('ord_compra')->where('token_ws', $request->token_ws)->first();
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          return view('webpay.webpayResponseErrors.invalidWebpayCert', ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
@@ -150,6 +158,7 @@ class WebpayController extends Controller
    public function saveTransactionResult($token_ws, $result, $transactionStatus)
    {
       try {
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $WebpayPago = WebpayPago::where('token_ws', $token_ws)->first();
          $WebpayPago->accounting_date = $result->accountingDate;
          $WebpayPago->ord_compra = $result->buyOrder;
@@ -184,16 +193,23 @@ class WebpayController extends Controller
          if (is_array($result)) {
             $result = json_decode(json_encode($result));
             if (strpos($result->detail, '274', 15)) {
+               //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+
+               //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                return view('webpay.end',
                   ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } elseif (strpos($result->detail, '272', 15)) {
                $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->first();
                if ($WebpayPago->estado_transaccion == 'ApprovedTransaction') {
+                  //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $user = User::where('rut', $historial->user_rut)->first();
                   $total = $historial->puntos - $user->pts;
+                  //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   $this->generateSwap($user->rut, $user->pts, $user->otpc, ($total * 3), $WebpayPago->ord_compra);
+
+                  //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $historial->copago = $WebpayPago->monto_dinero;
                   $historial->authorization_code = $WebpayPago->authorization_code;
@@ -202,24 +218,30 @@ class WebpayController extends Controller
                   $historial->card_number = $WebpayPago->card_number;
                   return view('webpay.responseCanjeSiTransbank', ['historial' => $historial, 'urlExito'=>$this->ConfigController->urlExito]);
                } else {
+                  //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   $this->procesarTransaccionNoAprobada($WebpayPago->ord_compra);
+                  //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                   return view('webpay.webpayResponseErrors.' . $WebpayPago->estado_transaccion,
                      ['TBK_ORDEN_COMPRA' => $WebpayPago->ord_compra, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
                }
             } else {
+               //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
                return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             }
          } else {
+            //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
             $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
             return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
          }
       } catch (Exception $e) {
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
          return view('webpay.end', ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
       }
    }
 
+   //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
    public function generateSwap($rut, $monto, $otpc, $copago, $ordenCompraCarrito){
       try {
          SoapWrapper::add(function ($service) {
@@ -229,6 +251,7 @@ class WebpayController extends Controller
                ->trace(true);
          });
          $psc = new PrestashopController();
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $result = $psc->prestashopGetProductsDetails($ordenCompraCarrito);
          $data = [
             'usuario' => $this->ConfigController->WebServiceUserCelPago,
@@ -247,6 +270,7 @@ class WebpayController extends Controller
             'hash_otpc' => $otpc,
             'tdv_otpc' => $this->ConfigController->WebServiceTdvOtpcCelPago,
          ];
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          SoapWrapper::service('ConfirmaCanje', function ($service) use ($data, $ordenCompraCarrito) {
             $Result = $service->call('ConfirmaCanjePSWSCLOTPC', [$data]);
             if ($Result->RC == '227') {
@@ -260,6 +284,7 @@ class WebpayController extends Controller
                $historial->saldo_final = $Result->saldo_final;
                $historial->puntos = $Result->puntos;
                $historial->copago = $data['copago'];
+               //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                $historial->ordenCompraCarrito = $ordenCompraCarrito;
                $historial->estado = 'canjeado';
                $historial->save();
@@ -275,9 +300,11 @@ class WebpayController extends Controller
    public function procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA)
    {
       try {
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $historial = HistorialCanje::select('user_rut')->where('ordenCompraCarrito', $TBK_ORDEN_COMPRA)->first();
          $this->CambioEstadoPorAnulacionWSCLOTPC($historial->user_rut);
       } catch (Exception $e) {
+         //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
          $this->procesarTransaccionNoAprobada($TBK_ORDEN_COMPRA);
          return view('webpay.end',
             ['TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
