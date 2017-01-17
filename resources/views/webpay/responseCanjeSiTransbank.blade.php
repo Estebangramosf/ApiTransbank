@@ -72,7 +72,7 @@
 
         <input type="hidden" name="CELPAGO_TBK_OC" value="{{$historial->id_sesion}}">
         <input type="hidden" name="CELPAGO_TBK_MONTO" value="{{$historial->copago}}">
-        <input type="hidden" name="CELPAGO_ID_CART" value="{{$historial->ordenCompraCarrito}}">l
+        <input type="hidden" name="CELPAGO_ID_CART" value="{{$historial->ordenCompraCarrito}}">
         <input type="hidden" name="CELPAGO_COD_CANJE" value="{{$historial->id_transaccion}}">
         <input type="hidden" name="CELPAGO_PUNTOS" value="{{$historial->puntos}}">
         <input type="hidden" name="CELPAGO_AUTHORIZATION_CODE" value="{{$historial->authorization_code}}">
