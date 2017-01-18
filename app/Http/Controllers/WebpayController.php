@@ -189,16 +189,16 @@ class WebpayController extends Controller
       try {
          $wp = $this->setParametersForTransbankTransactions();
          $result = $wp->getNormalTransaction()->getTransactionResult($request->token_ws);
-
          if (is_array($result)) {
             $result = json_decode(json_encode($result));
             if (strpos($result->detail, '274', 15)) {
                //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
-               $this->procesarTransaccionNoAprobada($request->TBK_ORDEN_COMPRA);
+               //Por request se cambia la id de sesion por orden de compra
+               $this->procesarTransaccionNoAprobada($request->TBK_ID_SESION);
 
                //Usa orden de compra, reemplazar por idSesion y orden de compra nuevo
                return view('webpay.end',
-                  ['TBK_ORDEN_COMPRA' => $request->TBK_ID_SESION, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
+                  ['TBK_ORDEN_COMPRA' => $request->TBK_ORDEN_COMPRA, 'urlFracaso'=>$this->ConfigController->urlFracaso]);
             } elseif (strpos($result->detail, '272', 15)) {
                $WebpayPago = WebpayPago::where('token_ws', $request->token_ws)->first();
 
