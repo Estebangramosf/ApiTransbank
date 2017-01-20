@@ -194,6 +194,7 @@ class WebpayController extends Controller
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $user = User::where('rut', $historial->user_rut)->first();
                   $total = $historial->puntos - $user->pts;
+
                   $this->generateSwap($user->rut, $user->pts, $user->otpc, ($total * 3), $WebpayPago->ord_compra);
                   $historial = HistorialCanje::where('ordenCompraCarrito', $WebpayPago->ord_compra)->first();
                   $historial->id_sesion = $WebpayPago->id_sesion;
