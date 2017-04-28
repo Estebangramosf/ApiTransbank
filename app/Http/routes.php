@@ -1,4 +1,55 @@
 <?php
+Route::get('test', function(){
+
+   $fecha = date("Y-m-d");
+
+
+
+   //$yesterday = date("Y-m-d 00:00:00", strtotime("$fecha -3 day"));
+   //$yesterday1 =date("Y-m-d 00:00:00", strtotime("$fecha this week wednesday"));
+
+   $today = date("Y-m-d 00:00:00", strtotime("$fecha this day"));
+   $monday =date("Y-m-d 00:00:00", strtotime("$fecha this week monday"));
+   $thursday =date("Y-m-d 00:00:00", strtotime("$fecha this week thursday"));
+
+
+
+   echo '+------------------------------------------+<br>';
+   echo $today.' -> HOY <br>';
+   echo '+------------------------------------------+<br>';
+   echo $monday.' -> LUNES <br>';
+   echo '+------------------------------------------+<br>';
+   echo $thursday.' -> JUEVES <br>';
+   echo '+------------------------------------------+<br>';
+
+   if ($today === $monday) {
+      echo 'Hoy es Lunes, Se debe realizar el desbloqueo<br><br>';
+      echo 'El rango es entre: <br>';
+      echo '+------------------------------------------+<br>';
+      echo $today.'<br>';
+      echo '+------------------------------------------+<br>';
+      echo date("Y-m-d 00:00:00", strtotime("$fecha -4 day")).' - ';
+      echo date("Y-m-d 23:59:59", strtotime("$fecha -1 day")).'<br>';
+
+      echo '+------------------------------------------+<br>';
+   }else if ($today === $thursday) {
+      echo 'Hoy es Jueves, Se debe realizar el desbloqueo<br><br>';
+      echo 'El rango es entre: <br>';
+      echo '+------------------------------------------+<br>';
+      echo $today.'<br>';
+      echo '+------------------------------------------+<br>';
+      echo date("Y-m-d 00:00:00", strtotime("$fecha -3 day")).' - ';
+      echo date("Y-m-d 23:59:59", strtotime("$fecha -1 day")).'<br>';
+
+      echo '+------------------------------------------+<br>';
+   }else{
+      echo 'No ocurre nada<br>';
+      echo '+------------------------------------------+<br>';
+   }
+
+});
+
+
 
 /*
 |--------------------------------------------------------------------------

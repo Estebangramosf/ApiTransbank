@@ -30,6 +30,10 @@ class PrestashopController extends Controller
    private $returnProducts=[];
 
    public function prestashopGetProductsDetails($cart_id){
+      /*
+         esto es todo lo que tiene que ver con traer los productos de prestashop a celmediapago
+
+      */
       try{
          $this->opt = ['resource' => 'carts', 'filter[id]' => $cart_id, 'display' => 'full'];
          $this->xml = Prestashop::get($this->opt);

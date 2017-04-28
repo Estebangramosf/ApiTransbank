@@ -34,10 +34,6 @@ class CelmediaPagoController extends Controller
    {
       try {
          $request->TBK_ID_SESION .= date("YmdHms");
-         // producto_id_aux , cantidad_compra , stock_real , orden_compra_id
-
-         //$this->PrestashopController->prestashopGetProducts($request->TBK_ORDEN_COMPRA);
-
          $WebpayPago = WebpayPago::where('ord_compra', $request->TBK_ORDEN_COMPRA)->first();
          if (count($WebpayPago) > 0) {
             if ($WebpayPago->estado_transaccion != 'ApprovedTransaction') {
